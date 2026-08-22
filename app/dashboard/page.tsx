@@ -47,7 +47,7 @@ async function getDashboardData() {
       entityCount: entityCount.count as number,
       entities: entities as any[],
       filings: filings as any[],
-      activity: activity as { week: string; score: string }[],
+      activity: activity as unknown as { week: string; score: string }[],
     };
   } catch (error) {
     console.error(error);
