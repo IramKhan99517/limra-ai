@@ -307,6 +307,11 @@ export default function Home() {
       </section>
 
       <footer className="border-t border-ink-line px-6 py-10 text-center text-xs text-dune">
+        <div className="mb-3 flex flex-wrap items-center justify-center gap-4">
+          <a href="/about" className="hover:text-linen">About</a>
+          <a href="/privacy" className="hover:text-linen">Privacy Policy</a>
+          <a href="/terms" className="hover:text-linen">Terms of Service</a>
+        </div>
         © 2026 LIMRA AI Intelligence. All rights reserved. · Riyadh, KSA
       </footer>
     </main>

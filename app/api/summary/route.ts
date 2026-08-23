@@ -23,6 +23,20 @@ export async function GET() {
       group by week_start
       order by week_start asc
     `;
+    const entities = await sql`
+      select id, name, owner, status, saudization_score
+      from entities
+      order by saudization_score desc
+      limit 8
+    `;
+    const filings = await sql`
+      select f.id, f.title, f.due_date, f.status, e.name as entity_name
+      from filings f
+      join entities e on e.id = f.entity_id
+      where f.status in ('pending', 'overdue')
+      order by f.due_date asc
+      limit 6
+    `;
 
     return NextResponse.json({
       activeLicenses: activeLicenses.count,
@@ -30,6 +44,8 @@ export async function GET() {
       avgSaudization: Number(avgSaudization.avg),
       entityCount: entityCount.count,
       activity,
+      entities,
+      filings,
     });
   } catch (error) {
     console.error(error);

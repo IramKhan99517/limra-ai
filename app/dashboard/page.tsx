@@ -1,62 +1,42 @@
-import { sql } from "@/lib/db";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
 
-export const dynamic = "force-dynamic";
+type SummaryData = {
+  activeLicenses: number;
+  pendingFilings: number;
+  avgSaudization: number;
+  entityCount: number;
+  activity: { week: string; score: string }[];
+  entities: { id: number; name: string; owner: string; status: string; saudization_score: string }[];
+  filings: { id: number; title: string; due_date: string; status: string; entity_name: string }[];
+};
 
-async function getDashboardData() {
-  try {
-    const [activeLicenses] = await sql`
-      select count(*)::int as count from licenses where status = 'approved'
-    `;
-    const [pendingFilings] = await sql`
-      select count(*)::int as count from filings where status in ('pending', 'overdue')
-    `;
-    const [avgSaudization] = await sql`
-      select coalesce(round(avg(saudization_score), 1), 0) as avg from entities
-    `;
-    const [entityCount] = await sql`
-      select count(*)::int as count from entities
-    `;
-    const entities = await sql`
-      select id, name, owner, status, saudization_score
-      from entities
-      order by saudization_score desc
-      limit 8
-    `;
-    const filings = await sql`
-      select f.id, f.title, f.due_date, f.status, e.name as entity_name
-      from filings f
-      join entities e on e.id = f.entity_id
-      where f.status in ('pending', 'overdue')
-      order by f.due_date asc
-      limit 6
-    `;
-    const activity = await sql`
-      select to_char(week_start, 'Mon DD') as week, round(avg(score), 1) as score
-      from compliance_activity
-      group by week_start
-      order by week_start asc
-    `;
+export default function DashboardPage() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
+  const [data, setData] = useState<SummaryData | null>(null);
+  const [error, setError] = useState(false);
 
-    return {
-      ok: true as const,
-      activeLicenses: activeLicenses.count as number,
-      pendingFilings: pendingFilings.count as number,
-      avgSaudization: Number(avgSaudization.avg),
-      entityCount: entityCount.count as number,
-      entities: entities as any[],
-      filings: filings as any[],
-      activity: activity as unknown as { week: string; score: string }[],
-    };
-  } catch (error) {
-    console.error(error);
-    return { ok: false as const };
-  }
-}
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push("/login");
+        return;
+      }
+      setChecking(false);
+      fetch("/api/summary")
+        .then((res) => (res.ok ? res.json() : Promise.reject()))
+        .then(setData)
+        .catch(() => setError(true));
+    });
+  }, [router]);
 
-export default async function DashboardPage() {
-  const data = await getDashboardData();
+  if (checking) return null;
 
   return (
     <main>
@@ -68,19 +48,14 @@ export default async function DashboardPage() {
             <h1 className="mt-3 font-display text-3xl md:text-4xl">Live operations overview</h1>
           </Reveal>
 
-          {!data.ok && (
+          {error && (
             <div className="mt-10 rounded-xl border border-gold/40 bg-gold/5 p-6 text-sm text-linen">
-              <p className="font-medium text-gold">Database not connected yet.</p>
-              <p className="mt-2 text-dune">
-                Set <code className="rounded bg-ink-soft px-1.5 py-0.5 font-mono">DATABASE_URL</code>{" "}
-                in your environment (Vercel → Project Settings → Environment Variables), run{" "}
-                <code className="rounded bg-ink-soft px-1.5 py-0.5 font-mono">npm run seed</code>, and
-                reload this page. See README.md for the full setup.
-              </p>
+              <p className="font-medium text-gold">Couldn&apos;t load dashboard data.</p>
+              <p className="mt-2 text-dune">Check that DATABASE_URL is configured correctly in Vercel.</p>
             </div>
           )}
 
-          {data.ok && (
+          {data && (
             <>
               <div className="mt-10 grid gap-6 md:grid-cols-4">
                 <StatCard label="Active Licenses" value={String(data.activeLicenses)} accent="signal" />
@@ -168,21 +143,11 @@ export default async function DashboardPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent: "signal" | "gold";
-}) {
+function StatCard({ label, value, accent }: { label: string; value: string; accent: "signal" | "gold" }) {
   return (
     <div className="rounded-xl border border-ink-line p-6">
       <p className="text-xs uppercase tracking-wide text-dune">{label}</p>
-      <p className={`mt-2 font-mono text-3xl ${accent === "signal" ? "text-signal" : "text-gold"}`}>
-        {value}
-      </p>
+      <p className={`mt-2 font-mono text-3xl ${accent === "signal" ? "text-signal" : "text-gold"}`}>{value}</p>
     </div>
   );
 }
