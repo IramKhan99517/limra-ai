@@ -1,7 +1,10 @@
-import { neon } from "@neondatabase/serverless";
+import postgres from "postgres";
 import "dotenv/config";
 
-const sql = neon(process.env.DATABASE_URL ?? "");
+const sql = postgres(process.env.DATABASE_URL ?? "", {
+  ssl: "require",
+  prepare: false,
+});
 
 async function seed() {
   if (!process.env.DATABASE_URL) {
