@@ -61,7 +61,7 @@ export default function Home() {
               Kingdom without the guesswork.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <a href="#cta" className="rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
+              <a href="/signup" className="rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
                 Start your setup
               </a>
               <a href="/dashboard" className="rounded-full border border-ink-line px-6 py-3 text-sm text-linen transition hover:border-dune">
@@ -194,7 +194,7 @@ export default function Home() {
                   </div>
                   <div className="text-right">
                     <p className="font-mono text-sm text-linen">{e.price}</p>
-                    <a href="#cta" className="text-xs text-signal hover:underline">Book</a>
+                    <a href={`/book?expert=${encodeURIComponent(e.name)}`} className="text-xs text-signal hover:underline">Book</a>
                   </div>
                 </div>
               </Reveal>

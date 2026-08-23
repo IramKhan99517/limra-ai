@@ -4,6 +4,7 @@ const links = [
   { href: "#calculator", label: "Calculator" },
   { href: "#marketplace", label: "Marketplace" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/login", label: "Log in" },
   { href: "#pricing", label: "Pricing" },
 ];
 
@@ -25,7 +26,7 @@ export function Nav() {
           ))}
         </div>
         <a
-          href="#cta"
+          href="/signup"
           className="rounded-full border border-gold/60 px-4 py-2 text-sm text-gold transition hover:bg-gold hover:text-ink"
         >
           Get Started

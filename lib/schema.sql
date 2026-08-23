@@ -35,6 +35,17 @@ create table if not exists compliance_activity (
   score numeric(5,2) not null
 );
 
+create table if not exists bookings (
+  id serial primary key,
+  expert_name text not null,
+  client_name text not null,
+  client_email text not null,
+  message text,
+  preferred_date date,
+  status text not null check (status in ('new', 'contacted', 'confirmed', 'cancelled')) default 'new',
+  created_at timestamptz not null default now()
+);
+
 create index if not exists idx_licenses_entity on licenses(entity_id);
 create index if not exists idx_filings_entity on filings(entity_id);
 create index if not exists idx_activity_entity on compliance_activity(entity_id);

@@ -24,3 +24,29 @@ export const sql = postgres(
     prepare: false, // required for Supabase's transaction-mode pooler
   }
 );
+
+export type Entity = {
+  id: number;
+  name: string;
+  owner: string;
+  status: "active" | "pending" | "suspended";
+  saudization_score: number;
+  created_at: string;
+};
+
+export type License = {
+  id: number;
+  entity_id: number;
+  type: string;
+  status: "approved" | "in_review" | "expiring" | "expired";
+  issue_date: string | null;
+  expiry_date: string | null;
+};
+
+export type Filing = {
+  id: number;
+  entity_id: number;
+  title: string;
+  due_date: string;
+  status: "pending" | "submitted" | "overdue";
+};
