@@ -16,11 +16,18 @@ type StoredDoc = {
   uploaded_at: string;
 };
 
+type Template = {
+  document_type_id: string;
+  file_path: string;
+  file_name: string;
+};
+
 export default function VaultPage() {
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   const [docs, setDocs] = useState<StoredDoc[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -34,8 +41,19 @@ export default function VaultPage() {
       setUserId(user.id);
       setChecking(false);
       loadDocs(user.id);
+      loadTemplates();
     });
   }, [router]);
+
+  async function loadTemplates() {
+    const { data } = await supabase.from("document_templates").select("document_type_id, file_path, file_name");
+    setTemplates(data ?? []);
+  }
+
+  function handleDownloadTemplate(template: Template) {
+    const { data } = supabase.storage.from("templates").getPublicUrl(template.file_path);
+    window.open(data.publicUrl, "_blank");
+  }
 
   async function loadDocs(uid: string) {
     const { data } = await supabase
@@ -155,14 +173,27 @@ export default function VaultPage() {
                             </span>
                           </div>
                           <p className="mt-1 text-xs text-dune">{dt.description}</p>
-                          <a
-                            href={dt.portalUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-1 inline-block text-xs text-signal hover:underline"
-                          >
-                            Get the form from {dt.portalName} →
-                          </a>
+                          <div className="mt-1 flex flex-wrap items-center gap-3">
+                            {templates.find((t) => t.document_type_id === dt.id) ? (
+                              <button
+                                onClick={() =>
+                                  handleDownloadTemplate(templates.find((t) => t.document_type_id === dt.id)!)
+                                }
+                                className="text-xs text-signal hover:underline"
+                              >
+                                ↓ Download blank form
+                              </button>
+                            ) : (
+                              <a
+                                href={dt.portalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-signal hover:underline"
+                              >
+                                Get the form from {dt.portalName} →
+                              </a>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex items-center gap-2">

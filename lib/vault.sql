@@ -36,3 +36,50 @@ create policy "Users can view own vault files" on storage.objects
 create policy "Users can delete own vault files" on storage.objects
   for delete to authenticated
   using (bucket_id = 'vault' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ─────────────────────────────────────────────────────────────
+-- Document templates: the actual blank government forms, uploaded
+-- once by an admin, downloadable by every user.
+-- ─────────────────────────────────────────────────────────────
+
+create table if not exists document_templates (
+  id serial primary key,
+  document_type_id text not null unique,  -- matches an id in lib/documentTypes.ts
+  file_name text not null,
+  file_path text not null,                -- path inside the 'templates' storage bucket
+  uploaded_at timestamptz not null default now()
+);
+
+alter table document_templates enable row level security;
+
+-- Anyone (including logged-out visitors) can see which templates exist
+create policy "Anyone can view templates" on document_templates
+  for select using (true);
+
+-- Only admins can add or change templates
+create policy "Admins can manage templates" on document_templates
+  for all
+  using (exists (select 1 from profiles where id = auth.uid() and role = 'admin'))
+  with check (exists (select 1 from profiles where id = auth.uid() and role = 'admin'));
+
+-- Public bucket — blank forms aren't sensitive, anyone can download them
+insert into storage.buckets (id, name, public)
+values ('templates', 'templates', true)
+on conflict (id) do nothing;
+
+create policy "Anyone can view template files" on storage.objects
+  for select using (bucket_id = 'templates');
+
+create policy "Admins can upload template files" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'templates'
+    and exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );
+
+create policy "Admins can delete template files" on storage.objects
+  for delete to authenticated
+  using (
+    bucket_id = 'templates'
+    and exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+  );

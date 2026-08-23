@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
+import { DOCUMENT_TYPES } from "@/lib/documentTypes";
 
 type Booking = {
   id: number;
@@ -26,12 +27,22 @@ type Entity = {
   created_at: string;
 };
 
+type Template = {
+  id: number;
+  document_type_id: string;
+  file_name: string;
+  file_path: string;
+};
+
 export default function AdminPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [allowed, setAllowed] = useState(false);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
     async function check() {
@@ -60,9 +71,43 @@ export default function AdminPage() {
       ]);
       setBookings(bookingsRes);
       setEntities(entitiesRes);
+      loadTemplates();
     }
     check();
   }, [router]);
+
+  async function loadTemplates() {
+    const { data } = await supabase.from("document_templates").select("*");
+    setTemplates(data ?? []);
+  }
+
+  async function handleTemplateUpload(documentTypeId: string, file: File) {
+    setUploadingId(documentTypeId);
+    const path = `${documentTypeId}-${Date.now()}-${file.name}`;
+
+    const existing = templates.find((t) => t.document_type_id === documentTypeId);
+    if (existing) {
+      await supabase.storage.from("templates").remove([existing.file_path]);
+      await supabase.from("document_templates").delete().eq("id", existing.id);
+    }
+
+    const { error: uploadError } = await supabase.storage.from("templates").upload(path, file);
+    if (!uploadError) {
+      await supabase.from("document_templates").insert({
+        document_type_id: documentTypeId,
+        file_name: file.name,
+        file_path: path,
+      });
+    }
+    await loadTemplates();
+    setUploadingId(null);
+  }
+
+  async function handleTemplateRemove(template: Template) {
+    await supabase.storage.from("templates").remove([template.file_path]);
+    await supabase.from("document_templates").delete().eq("id", template.id);
+    await loadTemplates();
+  }
 
   if (checking || !allowed) return null;
 
@@ -77,6 +122,61 @@ export default function AdminPage() {
           </Reveal>
 
           <Reveal delay={0.05} className="mt-10">
+            <div className="rounded-xl border border-ink-line p-6">
+              <h2 className="font-display text-lg">Document templates</h2>
+              <p className="mt-1 text-sm text-dune">
+                Upload the real government form for each document type. Once uploaded, every user
+                sees a &quot;Download Form&quot; button in their Vault.
+              </p>
+              <div className="mt-4 space-y-2">
+                {DOCUMENT_TYPES.map((dt) => {
+                  const template = templates.find((t) => t.document_type_id === dt.id);
+                  return (
+                    <div
+                      key={dt.id}
+                      className="flex flex-col gap-2 rounded-lg border border-ink-line p-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div>
+                        <p className="text-sm text-linen">{dt.name}</p>
+                        <p className="text-xs text-dune">
+                          {template ? `Uploaded: ${template.file_name}` : "No template uploaded yet"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input
+                          ref={(el) => { fileInputRefs.current[dt.id] = el; }}
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleTemplateUpload(dt.id, file);
+                          }}
+                        />
+                        <button
+                          onClick={() => fileInputRefs.current[dt.id]?.click()}
+                          disabled={uploadingId === dt.id}
+                          className="rounded-full bg-signal px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-signal-soft disabled:opacity-60"
+                        >
+                          {uploadingId === dt.id ? "Uploading..." : template ? "Replace" : "Upload"}
+                        </button>
+                        {template && (
+                          <button
+                            onClick={() => handleTemplateRemove(template)}
+                            className="rounded-full border border-ink-line px-3 py-1.5 text-xs text-dune transition hover:border-gold hover:text-gold"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={0.08} className="mt-8">
             <div className="overflow-x-auto rounded-xl border border-ink-line p-6">
               <h2 className="font-display text-lg">Booking requests ({bookings.length})</h2>
               <table className="mt-4 w-full min-w-[720px] border-collapse text-sm">
