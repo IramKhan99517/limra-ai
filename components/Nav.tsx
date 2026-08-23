@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -10,14 +10,18 @@ const links = [
   { href: "/#calculator", label: "Calculator" },
   { href: "/#marketplace", label: "Marketplace" },
   { href: "/dashboard", label: "Dashboard" },
+  { href: "/vault", label: "Vault" },
   { href: "/#pricing", label: "Pricing" },
 ];
 
 export function Nav() {
   const router = useRouter();
   const [email, setEmail] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -25,28 +29,46 @@ export function Nav() {
         setEmail(user.email ?? null);
         const { data: profile } = await supabase
           .from("profiles")
-          .select("role")
+          .select("role, full_name")
           .eq("id", user.id)
           .single();
         setIsAdmin(profile?.role === "admin");
+        setFullName(profile?.full_name ?? null);
       }
       setLoaded(true);
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setEmail(session?.user?.email ?? null);
-      if (!session?.user) setIsAdmin(false);
+      if (!session?.user) {
+        setIsAdmin(false);
+        setFullName(null);
+      }
     });
 
     return () => sub.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   async function handleLogout() {
     await supabase.auth.signOut();
     setEmail(null);
     setIsAdmin(false);
+    setFullName(null);
+    setMenuOpen(false);
     router.push("/");
   }
+
+  const initials = (fullName || email || "?").trim().charAt(0).toUpperCase();
 
   return (
     <header className="sticky top-0 z-50 border-b border-ink-line/70 bg-ink/85 backdrop-blur">
@@ -73,14 +95,54 @@ export function Nav() {
         {!loaded ? (
           <div className="h-9 w-24" />
         ) : email ? (
-          <div className="flex items-center gap-3">
-            <span className="hidden text-xs text-dune sm:inline">{email}</span>
+          <div className="relative" ref={menuRef}>
             <button
-              onClick={handleLogout}
-              className="rounded-full border border-ink-line px-4 py-2 text-sm text-linen transition hover:border-dune"
+              onClick={() => setMenuOpen((o) => !o)}
+              className="flex items-center gap-2 rounded-full border border-ink-line py-1.5 pl-1.5 pr-3 transition hover:border-dune"
             >
-              Log out
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-signal/15 font-mono text-xs text-signal">
+                {initials}
+              </span>
+              <span className="hidden text-sm text-linen sm:inline">{fullName || email}</span>
             </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 mt-2 w-64 overflow-hidden rounded-xl border border-ink-line bg-ink-soft shadow-xl">
+                <div className="flex items-center gap-3 border-b border-ink-line p-4">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-signal/15 font-mono text-sm text-signal">
+                    {initials}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm text-linen">{fullName || "Your account"}</p>
+                    <p className="truncate text-xs text-dune">{email}</p>
+                  </div>
+                </div>
+                <div className="p-1.5 text-sm">
+                  <a href="/account" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    View Profile
+                  </a>
+                  <a href="/vault" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    Document Vault
+                  </a>
+                  <a href="/dashboard" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    Dashboard
+                  </a>
+                  {isAdmin && (
+                    <a href="/admin" className="block rounded-lg px-3 py-2 text-gold transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                      Admin Panel
+                    </a>
+                  )}
+                </div>
+                <div className="border-t border-ink-line p-1.5">
+                  <button
+                    onClick={handleLogout}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-dune transition hover:bg-ink-line hover:text-linen"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex items-center gap-3">
