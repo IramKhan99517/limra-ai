@@ -80,9 +80,19 @@ export default function DashboardPage() {
       <Nav />
       <section className="px-6 py-16">
         <div className="mx-auto max-w-4xl">
-          <Reveal>
-            <p className="eyebrow">Command Dashboard</p>
-            <h1 className="mt-3 font-display text-3xl md:text-4xl">Your business, one view</h1>
+            <Reveal>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="eyebrow">Command Dashboard</p>
+                <h1 className="mt-3 font-display text-3xl md:text-4xl">Your business, one view</h1>
+              </div>
+              
+                href="/onboarding"
+                className="rounded-full border border-ink-line px-4 py-2 text-sm text-linen transition hover:border-dune"
+                  >
+                + Start another business
+              </a>
+            </div>
           </Reveal>
 
           {error && (
