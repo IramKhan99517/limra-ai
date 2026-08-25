@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const [entity] = await sql`
       insert into entities (name, owner, status, saudization_score, owner_id, activity, description)
-      values (${classification.business_name}, ${auth.user.email}, 'pending', 0, ${auth.user.id}, ${classification.activity}, ${message})
+            values (${classification.business_name}, ${auth.user.email ?? ""}, 'pending', 0, ${auth.user.id}, ${classification.activity}, ${message})
       returning *
     `;
 
