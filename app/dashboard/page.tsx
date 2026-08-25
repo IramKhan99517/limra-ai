@@ -73,7 +73,7 @@ export default function DashboardPage() {
     setUpdatingId(null);
   }
 
-   if (checking) return null;
+  if (checking) return null;
 
   return (
     <main>
@@ -101,6 +101,7 @@ export default function DashboardPage() {
               <p className="mt-2 text-dune">Check that DATABASE_URL and Supabase keys are configured correctly.</p>
             </div>
           )}
+
           {data && !data.hasEntity && (
             <Reveal delay={0.05} className="mt-10">
               <div className="rounded-xl border border-signal/40 bg-signal/5 p-8 text-center">
@@ -109,7 +110,7 @@ export default function DashboardPage() {
                   Tell LIMRA AI what you want to do, and we&apos;ll build a personalized setup
                   roadmap for you — documents, licenses, and next steps, tailored to your business.
                 </p>
-                <a
+                
                   href="/onboarding"
                   className="mt-6 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
                 >
