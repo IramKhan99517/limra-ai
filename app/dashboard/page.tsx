@@ -86,7 +86,7 @@ export default function DashboardPage() {
                 <p className="eyebrow">Command Dashboard</p>
                 <h1 className="mt-3 font-display text-3xl md:text-4xl">Your business, one view</h1>
               </div>
-              
+                <a
                 href="/onboarding"
                 className="rounded-full border border-ink-line px-4 py-2 text-sm text-linen transition hover:border-dune"
               >
@@ -110,7 +110,7 @@ export default function DashboardPage() {
                   Tell LIMRA AI what you want to do, and we&apos;ll build a personalized setup
                   roadmap for you — documents, licenses, and next steps, tailored to your business.
                 </p>
-                
+                  <a
                   href="/onboarding"
                   className="mt-6 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
                 >
