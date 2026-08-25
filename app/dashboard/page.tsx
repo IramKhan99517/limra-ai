@@ -73,14 +73,14 @@ export default function DashboardPage() {
     setUpdatingId(null);
   }
 
-  if (checking) return null;
+   if (checking) return null;
 
   return (
     <main>
       <Nav />
       <section className="px-6 py-16">
         <div className="mx-auto max-w-4xl">
-            <Reveal>
+          <Reveal>
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="eyebrow">Command Dashboard</p>
@@ -89,7 +89,7 @@ export default function DashboardPage() {
               
                 href="/onboarding"
                 className="rounded-full border border-ink-line px-4 py-2 text-sm text-linen transition hover:border-dune"
-                  >
+              >
                 + Start another business
               </a>
             </div>
@@ -101,7 +101,6 @@ export default function DashboardPage() {
               <p className="mt-2 text-dune">Check that DATABASE_URL and Supabase keys are configured correctly.</p>
             </div>
           )}
-
           {data && !data.hasEntity && (
             <Reveal delay={0.05} className="mt-10">
               <div className="rounded-xl border border-signal/40 bg-signal/5 p-8 text-center">
