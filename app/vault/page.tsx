@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
-import { DOCUMENT_TYPES, DOCUMENT_CATEGORIES } from "@/lib/documentTypes";
+import { DOCUMENT_TYPES, DOCUMENT_CATEGORIES, documentsForActivity, BUSINESS_ACTIVITIES } from "@/lib/documentTypes";
 
 type StoredDoc = {
   id: number;
@@ -28,6 +28,7 @@ export default function VaultPage() {
   const [checking, setChecking] = useState(true);
   const [docs, setDocs] = useState<StoredDoc[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
+  const [activity, setActivity] = useState<string | null>(null);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -42,6 +43,14 @@ export default function VaultPage() {
       setChecking(false);
       loadDocs(user.id);
       loadTemplates();
+      const { data: entity } = await supabase
+        .from("entities")
+        .select("activity")
+        .eq("owner_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      setActivity(entity?.activity ?? null);
     });
   }, [router]);
 
@@ -107,7 +116,8 @@ export default function VaultPage() {
 
   if (checking) return null;
 
-  const completedCount = DOCUMENT_TYPES.filter((dt) =>
+  const relevantDocs = documentsForActivity(activity);
+  const completedCount = relevantDocs.filter((dt) =>
     docs.some((d) => d.document_type_id === dt.id)
   ).length;
 
@@ -124,6 +134,19 @@ export default function VaultPage() {
               government form, fill it out, and store the signed copy here — everything stays with you
               until your business is fully established.
             </p>
+            {activity ? (
+              <p className="mt-2 text-xs text-signal">
+                Showing requirements for: {BUSINESS_ACTIVITIES.find((a) => a.id === activity)?.label ?? activity}
+              </p>
+            ) : (
+              <p className="mt-2 text-xs text-gold">
+                No business on file yet — showing the full checklist.{" "}
+                <a href="/onboarding" className="underline">
+                  Set up your business
+                </a>{" "}
+                to see requirements specific to you.
+              </p>
+            )}
           </Reveal>
 
           <Reveal delay={0.05} className="mt-8">
@@ -131,13 +154,13 @@ export default function VaultPage() {
               <div className="flex items-center justify-between text-sm">
                 <span className="text-dune">Setup progress</span>
                 <span className="font-mono text-signal">
-                  {completedCount} / {DOCUMENT_TYPES.length}
+                  {completedCount} / {relevantDocs.length}
                 </span>
               </div>
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink-line">
                 <div
                   className="h-full bg-signal transition-all"
-                  style={{ width: `${(completedCount / DOCUMENT_TYPES.length) * 100}%` }}
+                  style={{ width: `${(completedCount / relevantDocs.length) * 100}%` }}
                 />
               </div>
             </div>
@@ -154,7 +177,7 @@ export default function VaultPage() {
               <Reveal key={category} delay={ci * 0.05}>
                 <h2 className="font-display text-xl">{category}</h2>
                 <div className="mt-4 space-y-3">
-                  {DOCUMENT_TYPES.filter((dt) => dt.category === category).map((dt) => {
+                  {relevantDocs.filter((dt) => dt.category === category).map((dt) => {
                     const uploaded = docs.find((d) => d.document_type_id === dt.id);
                     return (
                       <div

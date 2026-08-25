@@ -65,9 +65,12 @@ export default function AdminPage() {
       setAllowed(true);
       setChecking(false);
 
+      const { data: { session } } = await supabase.auth.getSession();
+      const authHeader = { Authorization: `Bearer ${session?.access_token}` };
+
       const [bookingsRes, entitiesRes] = await Promise.all([
-        fetch("/api/bookings").then((r) => (r.ok ? r.json() : [])),
-        fetch("/api/entities").then((r) => (r.ok ? r.json() : [])),
+        fetch("/api/bookings", { headers: authHeader }).then((r) => (r.ok ? r.json() : [])),
+        fetch("/api/entities", { headers: authHeader }).then((r) => (r.ok ? r.json() : [])),
       ]);
       setBookings(bookingsRes);
       setEntities(entitiesRes);
@@ -119,6 +122,12 @@ export default function AdminPage() {
           <Reveal>
             <p className="eyebrow">Platform Admin</p>
             <h1 className="mt-3 font-display text-3xl md:text-4xl">All activity across LIMRA AI</h1>
+          </Reveal>
+
+          <Reveal delay={0.02}>
+            <div className="mt-4 rounded-lg border border-gold/30 bg-gold/5 px-4 py-2 text-xs text-gold">
+              Entities below include seeded sample data alongside real bookings.
+            </div>
           </Reveal>
 
           <Reveal delay={0.05} className="mt-10">

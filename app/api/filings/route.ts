@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
+import { getRequestUser, unauthorized, forbidden } from "@/lib/authServer";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  const auth = await getRequestUser(req);
+  if (!auth) return unauthorized();
+  if (auth.role !== "admin") return forbidden();
+
   const entityId = req.nextUrl.searchParams.get("entityId");
   try {
     const rows = entityId
@@ -27,6 +32,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await getRequestUser(req);
+  if (!auth) return unauthorized();
+  if (auth.role !== "admin") return forbidden();
+
   try {
     const body = await req.json();
     const { entity_id, title, due_date, status = "pending" } = body;
@@ -51,6 +60,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const auth = await getRequestUser(req);
+  if (!auth) return unauthorized();
+  if (auth.role !== "admin") return forbidden();
+
   try {
     const body = await req.json();
     const { id, status } = body;

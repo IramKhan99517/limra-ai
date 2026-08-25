@@ -5,36 +5,73 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
+import { BUSINESS_ACTIVITIES } from "@/lib/documentTypes";
 
-type SummaryData = {
-  activeLicenses: number;
-  pendingFilings: number;
-  avgSaudization: number;
-  entityCount: number;
-  activity: { week: string; score: string }[];
-  entities: { id: number; name: string; owner: string; status: string; saudization_score: string }[];
-  filings: { id: number; title: string; due_date: string; status: string; entity_name: string }[];
+type RoadmapStep = {
+  id: number;
+  order_index: number;
+  title: string;
+  description: string;
+  document_type_id: string | null;
+  status: "pending" | "in_progress" | "done";
 };
+
+type SummaryData =
+  | { hasEntity: false }
+  | {
+      hasEntity: true;
+      entity: { id: number; name: string; activity: string; status: string; saudization_score: string };
+      roadmap: RoadmapStep[];
+      nextAction: RoadmapStep | null;
+      activeLicenses: number;
+      pendingFilings: number;
+      licensesExpiringSoon: { type: string; expiry_date: string }[];
+    };
 
 export default function DashboardPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [data, setData] = useState<SummaryData | null>(null);
   const [error, setError] = useState(false);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-      setChecking(false);
-      fetch("/api/summary")
-        .then((res) => (res.ok ? res.json() : Promise.reject()))
-        .then(setData)
-        .catch(() => setError(true));
+    load();
+  }, []);
+
+  async function load() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      router.push("/login");
+      return;
+    }
+    setChecking(false);
+    try {
+      const res = await fetch("/api/summary", {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (!res.ok) throw new Error();
+      setData(await res.json());
+    } catch {
+      setError(true);
+    }
+  }
+
+  async function toggleStep(step: RoadmapStep) {
+    setUpdatingId(step.id);
+    const { data: { session } } = await supabase.auth.getSession();
+    const nextStatus = step.status === "done" ? "pending" : "done";
+    await fetch("/api/roadmap", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session?.access_token}`,
+      },
+      body: JSON.stringify({ id: step.id, status: nextStatus }),
     });
-  }, [router]);
+    await load();
+    setUpdatingId(null);
+  }
 
   if (checking) return null;
 
@@ -42,97 +79,125 @@ export default function DashboardPage() {
     <main>
       <Nav />
       <section className="px-6 py-16">
-        <div className="mx-auto max-w-6xl">
+        <div className="mx-auto max-w-4xl">
           <Reveal>
             <p className="eyebrow">Command Dashboard</p>
-            <h1 className="mt-3 font-display text-3xl md:text-4xl">Live operations overview</h1>
+            <h1 className="mt-3 font-display text-3xl md:text-4xl">Your business, one view</h1>
           </Reveal>
 
           {error && (
             <div className="mt-10 rounded-xl border border-gold/40 bg-gold/5 p-6 text-sm text-linen">
-              <p className="font-medium text-gold">Couldn&apos;t load dashboard data.</p>
-              <p className="mt-2 text-dune">Check that DATABASE_URL is configured correctly in Vercel.</p>
+              <p className="font-medium text-gold">Couldn&apos;t load your dashboard.</p>
+              <p className="mt-2 text-dune">Check that DATABASE_URL and Supabase keys are configured correctly.</p>
             </div>
           )}
 
-          {data && (
-            <>
-              <div className="mt-10 grid gap-6 md:grid-cols-4">
-                <StatCard label="Active Licenses" value={String(data.activeLicenses)} accent="signal" />
-                <StatCard label="Pending Filings" value={String(data.pendingFilings)} accent="gold" />
-                <StatCard label="Avg. Saudization" value={`${data.avgSaudization}%`} accent="signal" />
-                <StatCard label="Tracked Entities" value={String(data.entityCount)} accent="gold" />
+          {data && !data.hasEntity && (
+            <Reveal delay={0.05} className="mt-10">
+              <div className="rounded-xl border border-signal/40 bg-signal/5 p-8 text-center">
+                <p className="font-display text-xl">You haven&apos;t started a business yet</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-dune">
+                  Tell LIMRA AI what you want to do, and we&apos;ll build a personalized setup
+                  roadmap for you — documents, licenses, and next steps, tailored to your business.
+                </p>
+                <a
+                  href="/onboarding"
+                  className="mt-6 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
+                >
+                  Start your business
+                </a>
               </div>
+            </Reveal>
+          )}
 
-              <div className="mt-12 grid gap-8 lg:grid-cols-3">
-                <Reveal className="lg:col-span-2">
-                  <div className="rounded-xl border border-ink-line p-6">
-                    <h2 className="font-display text-lg">Compliance activity, 8-week trend</h2>
-                    <div className="mt-6 flex h-40 items-end gap-2">
-                      {data.activity.map((a) => (
-                        <div key={a.week} className="flex flex-1 flex-col items-center gap-2">
-                          <div
-                            className="w-full rounded-t bg-signal/70"
-                            style={{ height: `${Math.max(6, Number(a.score))}%` }}
-                            title={`${a.week}: ${a.score}`}
-                          />
-                          <span className="text-[10px] text-dune">{a.week}</span>
-                        </div>
-                      ))}
+          {data && data.hasEntity && (
+            <>
+              <Reveal delay={0.05} className="mt-10">
+                <div className="rounded-xl border border-ink-line p-6">
+                  <p className="eyebrow">
+                    {BUSINESS_ACTIVITIES.find((a) => a.id === data.entity.activity)?.label ?? data.entity.activity}
+                  </p>
+                  <h2 className="mt-1 font-display text-2xl">{data.entity.name}</h2>
+                  <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs text-dune">Status</p>
+                      <p className="mt-1 capitalize text-linen">{data.entity.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-dune">Active licenses</p>
+                      <p className="mt-1 font-mono text-signal">{data.activeLicenses}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-dune">Pending filings</p>
+                      <p className="mt-1 font-mono text-gold">{data.pendingFilings}</p>
                     </div>
                   </div>
-                </Reveal>
+                </div>
+              </Reveal>
 
-                <Reveal delay={0.08}>
-                  <div className="rounded-xl border border-ink-line p-6">
-                    <h2 className="font-display text-lg">Upcoming filings</h2>
-                    <ul className="mt-4 space-y-4">
-                      {data.filings.map((f) => (
-                        <li key={f.id} className="border-b border-ink-line/60 pb-3 text-sm last:border-0">
-                          <p className="text-linen">{f.title}</p>
-                          <p className="mt-1 text-xs text-dune">
-                            {f.entity_name} · due {new Date(f.due_date).toLocaleDateString()}
-                          </p>
-                          <span
-                            className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${
-                              f.status === "overdue" ? "bg-gold/20 text-gold" : "bg-signal/15 text-signal"
-                            }`}
-                          >
-                            {f.status}
-                          </span>
+              {data.nextAction && (
+                <Reveal delay={0.08} className="mt-6">
+                  <div className="rounded-xl border border-signal/40 bg-signal/5 p-5">
+                    <p className="text-xs uppercase tracking-wide text-signal">Recommended next action</p>
+                    <p className="mt-1 text-linen">{data.nextAction.title}</p>
+                    <p className="mt-1 text-sm text-dune">{data.nextAction.description}</p>
+                    {data.nextAction.document_type_id && (
+                      <a href="/vault" className="mt-2 inline-block text-xs text-signal hover:underline">
+                        Go to Document Vault →
+                      </a>
+                    )}
+                  </div>
+                </Reveal>
+              )}
+
+              {data.licensesExpiringSoon.length > 0 && (
+                <Reveal delay={0.1} className="mt-6">
+                  <div className="rounded-xl border border-gold/40 bg-gold/5 p-5">
+                    <p className="text-xs uppercase tracking-wide text-gold">Renewals due within 30 days</p>
+                    <ul className="mt-2 space-y-1 text-sm text-linen">
+                      {data.licensesExpiringSoon.map((l, i) => (
+                        <li key={i}>
+                          {l.type} — due {new Date(l.expiry_date).toLocaleDateString()}
                         </li>
                       ))}
-                      {data.filings.length === 0 && (
-                        <p className="text-sm text-dune">No pending filings. All caught up.</p>
-                      )}
                     </ul>
                   </div>
                 </Reveal>
-              </div>
+              )}
 
-              <Reveal delay={0.1} className="mt-8">
-                <div className="overflow-x-auto rounded-xl border border-ink-line p-6">
-                  <h2 className="font-display text-lg">Entities by localization score</h2>
-                  <table className="mt-4 w-full min-w-[560px] border-collapse text-sm">
-                    <thead>
-                      <tr className="border-b border-ink-line text-left text-dune">
-                        <th className="pb-3 font-normal">Entity</th>
-                        <th className="pb-3 font-normal">Owner</th>
-                        <th className="pb-3 font-normal">Status</th>
-                        <th className="pb-3 font-normal">Saudization</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.entities.map((e) => (
-                        <tr key={e.id} className="border-b border-ink-line/60">
-                          <td className="py-3 text-linen">{e.name}</td>
-                          <td className="py-3 text-dune">{e.owner}</td>
-                          <td className="py-3 text-dune capitalize">{e.status}</td>
-                          <td className="py-3 font-mono text-signal">{e.saudization_score}%</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <Reveal delay={0.12} className="mt-8">
+                <div className="rounded-xl border border-ink-line p-6">
+                  <h2 className="font-display text-lg">Your setup roadmap</h2>
+                  <p className="mt-1 text-xs text-dune">
+                    LIMRA guides you through each step. Final approval always comes from the relevant
+                    Saudi government authority.
+                  </p>
+                  <ul className="mt-4 space-y-3">
+                    {data.roadmap.map((step) => (
+                      <li
+                        key={step.id}
+                        className="flex items-start justify-between gap-4 border-b border-ink-line/60 pb-3 last:border-0"
+                      >
+                        <div>
+                          <p className={`text-sm ${step.status === "done" ? "text-dune line-through" : "text-linen"}`}>
+                            {step.title}
+                          </p>
+                          <p className="mt-0.5 text-xs text-dune">{step.description}</p>
+                        </div>
+                        <button
+                          onClick={() => toggleStep(step)}
+                          disabled={updatingId === step.id}
+                          className={`shrink-0 rounded-full border px-3 py-1 text-xs transition ${
+                            step.status === "done"
+                              ? "border-signal/40 text-signal"
+                              : "border-ink-line text-dune hover:border-dune hover:text-linen"
+                          }`}
+                        >
+                          {step.status === "done" ? "Done ✓" : "Mark done"}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </Reveal>
             </>
@@ -140,14 +205,5 @@ export default function DashboardPage() {
         </div>
       </section>
     </main>
-  );
-}
-
-function StatCard({ label, value, accent }: { label: string; value: string; accent: "signal" | "gold" }) {
-  return (
-    <div className="rounded-xl border border-ink-line p-6">
-      <p className="text-xs uppercase tracking-wide text-dune">{label}</p>
-      <p className={`mt-2 font-mono text-3xl ${accent === "signal" ? "text-signal" : "text-gold"}`}>{value}</p>
-    </div>
   );
 }
