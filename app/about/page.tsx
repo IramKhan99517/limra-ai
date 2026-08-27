@@ -11,15 +11,15 @@ export default function AboutPage() {
           <h1 className="mt-3 font-display text-4xl">Building clarity for Saudi Arabia&apos;s founders</h1>
           <div className="mt-8 space-y-5 text-dune">
             <p>
-              LIMRA AI exists to remove the guesswork from launching and operating a business in the
-              Kingdom. Regulatory requirements, licensing steps, and localization targets change
-              often — we track them so founders don&apos;t have to.
+              LIMRA AI exists to remove the guesswork from launching a business in the Kingdom.
+              Describe your business and we map it to the exact Saudi licenses and documents you
+              need, then give you a clear, step-by-step setup roadmap.
             </p>
             <p>
-              We combine live regulatory intelligence with a vetted marketplace of legal, accounting,
-              and PRO specialists, and a command dashboard that keeps every license, filing, and
-              obligation visible in one place — from your first application through ongoing
-              compliance.
+              Today the platform maps your requirements across Saudi authorities, generates a
+              personalized checklist, and keeps every document in one secure vault. Live regulatory
+              monitoring, a vetted specialist marketplace, and deeper automation are on our roadmap
+              as we integrate each authority.
             </p>
             <p>
               LIMRA AI is built in support of Saudi Arabia&apos;s Vision 2030 goals, helping both local

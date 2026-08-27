@@ -2,14 +2,18 @@ import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
 import { RadarSignature } from "@/components/RadarSignature";
 import { Calculator } from "@/components/Calculator";
+import { DOCUMENT_TYPES } from "@/lib/documentTypes";
+
+const DOC_TYPE_COUNT = DOCUMENT_TYPES.length;
+const AUTHORITY_COUNT = new Set(DOCUMENT_TYPES.map((d) => d.portalName)).size;
 
 const MODULES = [
-  { name: "Regulatory Radar", desc: "Real-time monitoring of MISA, ZATCA, and Ministry updates mapped directly to your entity." },
-  { name: "Licensing Engine", desc: "Auto-generated, pre-validated license applications with confidence scoring." },
-  { name: "Entity Structuring", desc: "Model LLC, branch, or JV structures with ownership and tax implications." },
-  { name: "Compliance Vault", desc: "Every renewal, filing, and obligation tracked with automated reminders." },
-  { name: "Incentive Finder", desc: "Surface grants, SEZ benefits, and Vision 2030 incentives you qualify for." },
-  { name: "Localization Score", desc: "Track Saudization (Nitaqat) targets and GOSI compliance in one score." },
+  { name: "Document Vault", desc: "Store every business document in one private, encrypted vault — with the correct government form and portal for each requirement.", status: "live" },
+  { name: "Regulatory Radar", desc: "Real-time monitoring of MISA, ZATCA, and Ministry updates mapped to your entity.", status: "roadmap" },
+  { name: "Licensing Engine", desc: "Auto-generated, pre-validated license applications with confidence scoring.", status: "roadmap" },
+  { name: "Entity Structuring", desc: "Model LLC, branch, or JV structures with ownership and tax implications.", status: "roadmap" },
+  { name: "Incentive Finder", desc: "Surface grants, SEZ benefits, and Vision 2030 incentives you qualify for.", status: "roadmap" },
+  { name: "Localization Score", desc: "Track Saudization (Nitaqat) targets and GOSI compliance in one score.", status: "roadmap" },
 ];
 
 const ZONES = [
@@ -29,16 +33,16 @@ const EXPERTS = [
 ];
 
 const JOURNEY = [
-  { step: "01", title: "Discover & qualify", desc: "Answer a short intake and LIMRA AI maps your activity to the exact licenses, ownership rules, and incentives." },
-  { step: "02", title: "Structure & apply", desc: "Generate pre-validated MISA and commercial registration filings with confidence scores before you submit." },
-  { step: "03", title: "Activate operations", desc: "Open bank accounts, register for ZATCA and GOSI, and onboard staff — tracked in one checklist." },
-  { step: "04", title: "Scale & stay compliant", desc: "Continuous monitoring keeps renewals, Saudization, and tax obligations green as you grow." },
+  { step: "01", title: "Describe your business", desc: "Answer a short intake and LIMRA AI maps your activity to the exact licenses and documents you need in Saudi Arabia." },
+  { step: "02", title: "Get your roadmap", desc: "See a personalized, step-by-step checklist with the correct government form and portal for each requirement." },
+  { step: "03", title: "Prepare & store", desc: "Download each official form, complete it, and keep every signed document in one secure vault." },
+  { step: "04", title: "Stay organized as you grow", desc: "Track your setup progress and keep licenses, renewals, and documents in one place — with more automation on the way." },
 ];
 
 const PLANS = [
-  { name: "Founder", price: "SAR 0", cadence: "forever", desc: "For solo founders exploring market entry.", features: ["Regulatory Radar (1 sector)", "Licensing checklist", "Marketplace access", "Community support"], cta: "Start free", featured: false },
-  { name: "Growth", price: "SAR 899", cadence: "month", desc: "For teams actively launching and operating.", features: ["All Intelligence Modules", "Command Dashboard", "Priority expert matching", "Compliance automation", "Up to 5 entities"], cta: "Start 14-day trial", featured: true },
-  { name: "Enterprise", price: "Custom", cadence: "", desc: "For multinationals and RHQ operations.", features: ["Unlimited entities", "Dedicated advisor", "API & data feeds", "SLA & audit logs", "Custom integrations"], cta: "Talk to sales", featured: false },
+  { name: "Founder", price: "SAR 0", cadence: "forever", desc: "For solo founders exploring market entry.", features: ["Licensing checklist", "Document Vault", "Personalized setup roadmap", "Community support"], cta: "Start free", href: "/signup", featured: false },
+  { name: "Growth", price: "SAR 899", cadence: "month", desc: "For teams actively launching and operating.", features: ["Everything in Founder", "Command Dashboard", "Priority expert matching", "Up to 5 entities"], cta: "Request beta access", href: "/signup", featured: true },
+  { name: "Enterprise", price: "Custom", cadence: "", desc: "For multinationals and RHQ operations.", features: ["Unlimited entities", "Dedicated advisor", "API & data feeds", "SLA & audit logs", "Custom integrations"], cta: "Talk to sales", href: "#cta", featured: false },
 ];
 
 export default function Home() {
@@ -56,9 +60,9 @@ export default function Home() {
               <span className="italic text-signal">total clarity.</span>
             </h1>
             <p className="mt-6 max-w-md text-dune">
-              LIMRA AI unifies regulatory intelligence, an expert marketplace, and a live command
-              dashboard — so founders and enterprises can license, structure, and scale across the
-              Kingdom without the guesswork.
+              Describe your business in a sentence. LIMRA AI maps it to the exact Saudi licenses and
+              documents you need, builds a personalized setup roadmap, and keeps every file in one
+              secure vault.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a href="/signup" className="rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
@@ -69,7 +73,7 @@ export default function Home() {
               </a>
             </div>
             <p className="mt-8 font-mono text-xs text-dune">
-             Under Construction
+              Now in private beta · Built for founders entering Saudi Arabia
             </p>
           </Reveal>
 
@@ -83,7 +87,9 @@ export default function Home() {
       <Reveal>
         <section className="border-y border-ink-line bg-ink-soft/50 px-6 py-10">
           <div className="mx-auto grid max-w-6xl grid-cols-3 gap-6 text-center font-mono">
-           
+            <Stat value={String(DOC_TYPE_COUNT)} label="Document types mapped" />
+            <Stat value={String(AUTHORITY_COUNT)} label="Saudi authorities covered" />
+            <Stat value="AI-guided" label="Setup roadmap" />
           </div>
         </section>
       </Reveal>
@@ -97,15 +103,24 @@ export default function Home() {
               Six engines that turn Saudi red tape into a clear path
             </h2>
             <p className="mt-3 max-w-xl text-dune">
-              Each module runs on live regulatory data, so your decisions are always grounded in the
-              current rules — not last year&apos;s.
+              The Document Vault is live today. The rest are on our near-term roadmap as we integrate
+              each Saudi authority.
             </p>
           </Reveal>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {MODULES.map((m, i) => (
               <Reveal key={m.name} delay={i * 0.06}>
                 <div className="h-full rounded-xl border border-ink-line p-6 transition hover:border-signal/40">
-                  <h3 className="font-display text-lg">{m.name}</h3>
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="font-display text-lg">{m.name}</h3>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${
+                        m.status === "live" ? "bg-signal/15 text-signal" : "bg-ink-line text-dune"
+                      }`}
+                    >
+                      {m.status === "live" ? "Live" : "Roadmap"}
+                    </span>
+                  </div>
                   <p className="mt-2 text-sm text-dune">{m.desc}</p>
                 </div>
               </Reveal>
@@ -120,8 +135,12 @@ export default function Home() {
           <Reveal>
             <p className="eyebrow">Zone Intelligence</p>
             <h2 className="mt-3 max-w-2xl font-display text-3xl md:text-4xl">
-              Compare real setup costs across Saudi economic zones
+              Compare setup costs across Saudi economic zones
             </h2>
+            <p className="mt-3 max-w-xl text-sm text-dune">
+              Illustrative sample figures for orientation — live, zone-verified cost and
+              processing data is being integrated with each authority.
+            </p>
           </Reveal>
           <div className="mt-12 overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-sm">
@@ -157,7 +176,7 @@ export default function Home() {
           <Reveal>
             <p className="eyebrow">Setup Calculator</p>
             <h2 className="mt-3 max-w-2xl font-display text-3xl md:text-4xl">
-              Know your real Year-1 cost before you talk to anyone
+              Estimate your Year-1 cost before you talk to anyone
             </h2>
           </Reveal>
           <Reveal delay={0.1} className="mt-12">
@@ -172,8 +191,12 @@ export default function Home() {
           <Reveal>
             <p className="eyebrow">Expert Marketplace</p>
             <h2 className="mt-3 max-w-2xl font-display text-3xl md:text-4xl">
-              Vetted specialists, on demand
+              Specialists, on demand
             </h2>
+            <p className="mt-3 max-w-xl text-sm text-dune">
+              Sample partner profiles for illustration — our vetted marketplace and booking
+              flow are launching soon.
+            </p>
           </Reveal>
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {EXPERTS.map((e, i) => (
@@ -210,8 +233,8 @@ export default function Home() {
               Your entire Saudi operation, one glass surface
             </h2>
             <p className="mt-3 max-w-xl text-dune">
-              A living cockpit for licenses, compliance, spend, and localization — backed by a real
-              database, updated the moment a filing changes.
+              A live view of your business setup — licenses, documents, and your step-by-step
+              roadmap — backed by a real database that updates as you work.
             </p>
             <a
               href="/dashboard"
@@ -252,6 +275,9 @@ export default function Home() {
             <h2 className="mt-3 max-w-2xl font-display text-3xl md:text-4xl">
               Plans that scale from first license to full RHQ
             </h2>
+            <p className="mt-3 max-w-xl text-sm text-dune">
+              LIMRA is in private beta — pricing below is indicative, and beta access is free while we build.
+            </p>
           </Reveal>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {PLANS.map((p, i) => (
@@ -274,7 +300,7 @@ export default function Home() {
                     ))}
                   </ul>
                   <a
-                    href="#cta"
+                    href={p.href}
                     className={`mt-6 inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-medium transition ${
                       p.featured ? "bg-signal text-ink hover:bg-signal-soft" : "border border-ink-line text-linen hover:border-dune"
                     }`}
@@ -295,8 +321,8 @@ export default function Home() {
             Build your business in the Kingdom with confidence.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-dune">
-            Join thousands of founders and enterprises using LIMRA AI to launch faster and stay
-            compliant across Saudi Arabia.
+            Map your Saudi business setup, get a personalized document roadmap, and keep every
+            file in one secure vault — free while we&apos;re in private beta.
           </p>
           <a href="#top" className="mt-8 inline-flex items-center justify-center rounded-full bg-signal px-7 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
             Start your setup

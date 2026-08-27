@@ -26,7 +26,7 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "LIMRA AI — Saudi Business Setup Intelligence",
   description:
-    "LIMRA AI is the intelligence platform and marketplace for launching, licensing, and scaling businesses in Saudi Arabia.",
+    "LIMRA AI maps your business to the exact Saudi licenses and documents you need, builds a personalized setup roadmap, and keeps every file in one secure vault.",
 };
 
 export default function RootLayout({

@@ -25,12 +25,11 @@ export function Calculator() {
   const activity = ACTIVITIES.find((a) => a.id === activityId)!;
   const structure = STRUCTURES.find((s) => s.id === structureId)!;
 
-  const { total, approval, timeline } = useMemo(() => {
+  const { total, timeline } = useMemo(() => {
     const total = Math.round((activity.base * structure.modifier + iqamas * IQAMA_COST) / 100) * 100;
-    const approval = Math.max(70, Math.min(97, 96 - Math.round(structure.modifier * 4) - iqamas));
     const minDays = 4 + Math.round(structure.modifier * 2);
     const maxDays = minDays + 3 + (iqamas > 4 ? 2 : 0);
-    return { total, approval, timeline: `${minDays}-${maxDays}` };
+    return { total, timeline: `${minDays}-${maxDays}` };
   }, [activity, structure, iqamas]);
 
   return (
@@ -80,21 +79,19 @@ export function Calculator() {
             mandatory Year-1 fees.
           </p>
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-dune">Bank Approval</p>
-            <p className="font-mono text-2xl text-signal">{approval}%</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-wide text-dune">Est. Timeline</p>
-            <p className="font-mono text-2xl text-gold">{timeline} days</p>
-          </div>
+        <div className="mt-6">
+          <p className="text-xs uppercase tracking-wide text-dune">Est. Timeline</p>
+          <p className="font-mono text-2xl text-gold">{timeline} days</p>
+          <p className="mt-4 text-xs text-dune">
+            Indicative estimate only — not a quote. Actual costs and timelines vary by activity,
+            legal structure, and authority.
+          </p>
         </div>
         <a
-          href="#cta"
+          href="/signup"
           className="mt-6 inline-flex items-center justify-center rounded-full bg-signal px-5 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
         >
-          Get my feasibility dossier
+          Start your setup
         </a>
       </div>
     </div>

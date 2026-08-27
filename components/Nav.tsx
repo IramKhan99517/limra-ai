@@ -21,6 +21,7 @@ export function Nav() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -92,6 +93,15 @@ export function Nav() {
           )}
         </div>
 
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setMobileOpen((o) => !o)}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-line text-linen transition hover:border-dune md:hidden"
+            aria-label="Toggle menu"
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? "✕" : "☰"}
+          </button>
         {!loaded ? (
           <div className="h-9 w-24" />
         ) : email ? (
@@ -157,7 +167,43 @@ export function Nav() {
             </a>
           </div>
         )}
+        </div>
       </nav>
+
+      {mobileOpen && (
+        <div className="border-t border-ink-line bg-ink px-6 py-4 md:hidden">
+          <div className="flex flex-col gap-1 text-sm">
+            {links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2 text-dune transition hover:bg-ink-line hover:text-linen"
+              >
+                {l.label}
+              </a>
+            ))}
+            {isAdmin && (
+              <a
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2 text-gold transition hover:bg-ink-line"
+              >
+                Admin
+              </a>
+            )}
+            {!email && (
+              <a
+                href="/login"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-lg px-3 py-2 text-dune transition hover:bg-ink-line hover:text-linen"
+              >
+                Log in
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

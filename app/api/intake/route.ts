@@ -15,7 +15,7 @@ async function classifyWithAI(message: string): Promise<Classification | null> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return null;
 
-   try {
+  try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: {
@@ -34,20 +34,13 @@ async function classifyWithAI(message: string): Promise<Classification | null> {
         messages: [{ role: "user", content: message }],
       }),
     });
-    if (!res.ok) {
-      console.error("[intake] Anthropic API error:", res.status, await res.text());
-      return null;
-    }
+    if (!res.ok) return null;
     const data = await res.json();
     const text = data.content?.find((b: any) => b.type === "text")?.text ?? "";
     const parsed = JSON.parse(text.trim());
-    if (!BUSINESS_ACTIVITIES.some((a) => a.id === parsed.activity)) {
-      console.error("[intake] AI returned unrecognized activity:", parsed);
-      return null;
-    }
+    if (!BUSINESS_ACTIVITIES.some((a) => a.id === parsed.activity)) return null;
     return parsed;
-  } catch (err) {
-    console.error("[intake] classifyWithAI threw:", err);
+  } catch {
     return null;
   }
 }
@@ -82,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const [entity] = await sql`
       insert into entities (name, owner, status, saudization_score, owner_id, activity, description)
-            values (${classification.business_name}, ${auth.user.email ?? ""}, 'pending', 0, ${auth.user.id}, ${classification.activity}, ${message})
+      values (${classification.business_name}, ${auth.user.email ?? ""}, 'pending', 0, ${auth.user.id}, ${classification.activity}, ${message})
       returning *
     `;
 
