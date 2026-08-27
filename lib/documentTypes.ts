@@ -155,7 +155,16 @@ export const DOCUMENT_CATEGORIES = [
   "Operating Permits",
 ] as const;
 
-export function documentsForActivity(activity: string | null | undefined): DocumentType[] {
-  if (!activity) return DOCUMENT_TYPES;
-  return DOCUMENT_TYPES.filter((dt) => dt.activities === "all" || dt.activities.includes(activity as BusinessActivity));
+export function documentsForActivity(
+  activity: string | null | undefined,
+  ownership?: string | null,
+): DocumentType[] {
+  let docs = !activity
+    ? DOCUMENT_TYPES
+    : DOCUMENT_TYPES.filter(
+        (dt) => dt.activities === "all" || dt.activities.includes(activity as BusinessActivity),
+      );
+  // The MISA investment license is a foreign-ownership requirement only.
+  if (ownership === "saudi_gcc") docs = docs.filter((dt) => dt.id !== "misa-license");
+  return docs;
 }

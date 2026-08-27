@@ -29,6 +29,7 @@ export default function VaultPage() {
   const [docs, setDocs] = useState<StoredDoc[]>([]);
   const [templates, setTemplates] = useState<Template[]>([]);
   const [activity, setActivity] = useState<string | null>(null);
+  const [ownership, setOwnership] = useState<string | null>(null);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -45,12 +46,13 @@ export default function VaultPage() {
       loadTemplates();
       const { data: entity } = await supabase
         .from("entities")
-        .select("activity")
+        .select("activity, ownership")
         .eq("owner_id", user.id)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
       setActivity(entity?.activity ?? null);
+      setOwnership(entity?.ownership ?? null);
     });
   }, [router]);
 
@@ -116,7 +118,7 @@ export default function VaultPage() {
 
   if (checking) return null;
 
-  const relevantDocs = documentsForActivity(activity);
+  const relevantDocs = documentsForActivity(activity, ownership);
   const completedCount = relevantDocs.filter((dt) =>
     docs.some((d) => d.document_type_id === dt.id)
   ).length;

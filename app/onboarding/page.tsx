@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
+import {
+  OWNERSHIP_OPTIONS,
+  LEGAL_STRUCTURE_OPTIONS,
+  type Ownership,
+  type LegalStructure,
+} from "@/lib/ksaJourney";
 
 const EXAMPLES = [
   "I want to start a food business in Saudi Arabia",
@@ -16,6 +22,8 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [checking, setChecking] = useState(true);
   const [message, setMessage] = useState("");
+  const [ownership, setOwnership] = useState<Ownership>("saudi_gcc");
+  const [legalStructure, setLegalStructure] = useState<LegalStructure>("llc");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +36,13 @@ export default function OnboardingPage() {
       setChecking(false);
     });
   }, [router]);
+
+  // Foreign investors cannot use a sole establishment — keep the form legal.
+  useEffect(() => {
+    if (ownership === "foreign" && legalStructure === "sole_establishment") {
+      setLegalStructure("llc");
+    }
+  }, [ownership, legalStructure]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -42,7 +57,7 @@ export default function OnboardingPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session?.access_token}`,
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, ownership, legalStructure }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Something went wrong");
@@ -95,6 +110,54 @@ export default function OnboardingPage() {
                   {ex}
                 </button>
               ))}
+            </div>
+
+            <div className="grid gap-4 border-t border-ink-line/60 pt-5 sm:grid-cols-2">
+              <div>
+                <label htmlFor="ownership" className="mb-1.5 block text-xs uppercase tracking-wide text-dune">
+                  Ownership
+                </label>
+                <select
+                  id="ownership"
+                  value={ownership}
+                  onChange={(e) => setOwnership(e.target.value as Ownership)}
+                  className="w-full rounded-lg border border-ink-line bg-ink px-3 py-2.5 text-sm text-linen focus:outline-none focus:ring-2 focus:ring-signal"
+                >
+                  {OWNERSHIP_OPTIONS.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-dune">
+                  {OWNERSHIP_OPTIONS.find((o) => o.id === ownership)?.hint}
+                </p>
+              </div>
+              <div>
+                <label htmlFor="legalStructure" className="mb-1.5 block text-xs uppercase tracking-wide text-dune">
+                  Legal structure
+                </label>
+                <select
+                  id="legalStructure"
+                  value={legalStructure}
+                  onChange={(e) => setLegalStructure(e.target.value as LegalStructure)}
+                  className="w-full rounded-lg border border-ink-line bg-ink px-3 py-2.5 text-sm text-linen focus:outline-none focus:ring-2 focus:ring-signal"
+                >
+                  {LEGAL_STRUCTURE_OPTIONS.map((o) => (
+                    <option
+                      key={o.id}
+                      value={o.id}
+                      disabled={ownership === "foreign" && !o.foreignAllowed}
+                    >
+                      {o.label}
+                      {ownership === "foreign" && !o.foreignAllowed ? " — Saudi/GCC only" : ""}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-dune">
+                  {LEGAL_STRUCTURE_OPTIONS.find((o) => o.id === legalStructure)?.hint}
+                </p>
+              </div>
             </div>
 
             {error && <p className="text-sm text-gold">{error}</p>}

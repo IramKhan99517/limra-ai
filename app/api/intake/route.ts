@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getRequestUser, unauthorized } from "@/lib/authServer";
-import { documentsForActivity, BUSINESS_ACTIVITIES, type BusinessActivity } from "@/lib/documentTypes";
+import { BUSINESS_ACTIVITIES, type BusinessActivity } from "@/lib/documentTypes";
+import { flattenJourney, normalizeProfile } from "@/lib/ksaJourney";
 
 export const dynamic = "force-dynamic";
 
@@ -66,46 +67,38 @@ export async function POST(req: NextRequest) {
   if (!auth) return unauthorized();
 
   try {
-    const { message } = await req.json();
+    const body = await req.json();
+    const message = body?.message;
     if (!message || typeof message !== "string" || message.trim().length < 5) {
       return NextResponse.json({ error: "Please describe your business in a sentence or two." }, { status: 400 });
     }
 
     const classification = (await classifyWithAI(message)) ?? classifyWithRules(message);
 
+    // Build the branched KSA journey from the captured business profile.
+    const profile = normalizeProfile({
+      activity: classification.activity,
+      ownership: body?.ownership,
+      legalStructure: body?.legalStructure,
+    });
+
     const [entity] = await sql`
-      insert into entities (name, owner, status, saudization_score, owner_id, activity, description)
-      values (${classification.business_name}, ${auth.user.email ?? ""}, 'pending', 0, ${auth.user.id}, ${classification.activity}, ${message})
+      insert into entities (name, owner, status, saudization_score, owner_id, activity, description, ownership, legal_structure)
+      values (${classification.business_name}, ${auth.user.email ?? ""}, 'pending', 0, ${auth.user.id}, ${classification.activity}, ${message}, ${profile.ownership}, ${profile.legalStructure})
       returning *
     `;
 
-    const requiredDocs = documentsForActivity(classification.activity);
-    const steps = [
-      {
-        title: "Confirm your business activity",
-        description: classification.summary,
-        document_type_id: null as string | null,
-      },
-      ...requiredDocs.map((d) => ({
-        title: `Prepare: ${d.name}`,
-        description: d.description,
-        document_type_id: d.id,
-      })),
-      {
-        title: "Book an expert consultation",
-        description: "Connect with a vetted legal or PRO specialist to review your setup before submitting applications.",
-        document_type_id: null,
-      },
-    ];
+    const journeySteps = flattenJourney(profile);
 
-    for (let i = 0; i < steps.length; i++) {
+    for (let i = 0; i < journeySteps.length; i++) {
+      const step = journeySteps[i];
       await sql`
-        insert into roadmap_steps (entity_id, order_index, title, description, document_type_id, status)
-        values (${entity.id}, ${i}, ${steps[i].title}, ${steps[i].description}, ${steps[i].document_type_id}, ${i === 0 ? "in_progress" : "pending"})
+        insert into roadmap_steps (entity_id, order_index, title, description, document_type_id, status, step_key, stage)
+        values (${entity.id}, ${i}, ${step.title}, ${step.description}, ${step.documentTypeIds[0] ?? null}, ${i === 0 ? "in_progress" : "pending"}, ${step.key}, ${step.stageKey})
       `;
     }
 
-    return NextResponse.json({ entity, stepCount: steps.length, aiUsed: !!process.env.ANTHROPIC_API_KEY });
+    return NextResponse.json({ entity, stepCount: journeySteps.length, aiUsed: !!process.env.ANTHROPIC_API_KEY });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Failed to process your business description." }, { status: 500 });

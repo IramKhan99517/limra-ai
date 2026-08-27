@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const entities = await sql`
-      select id, name, owner, status, activity, saudization_score, created_at
+      select id, name, owner, status, activity, saudization_score, created_at, ownership, legal_structure
       from entities
       where owner_id = ${auth.user.id}
       order by created_at desc
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const entity = entities[0];
 
     const roadmap = await sql`
-      select id, order_index, title, description, document_type_id, status
+      select id, order_index, title, description, document_type_id, status, step_key, stage
       from roadmap_steps
       where entity_id = ${entity.id}
       order by order_index asc
