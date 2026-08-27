@@ -69,7 +69,7 @@ export default function Home() {
               </a>
             </div>
             <p className="mt-8 font-mono text-xs text-dune">
-              Trusted by 4,200+ founders · 13 regulatory bodies integrated
+             Under Construction
             </p>
           </Reveal>
 
@@ -83,9 +83,7 @@ export default function Home() {
       <Reveal>
         <section className="border-y border-ink-line bg-ink-soft/50 px-6 py-10">
           <div className="mx-auto grid max-w-6xl grid-cols-3 gap-6 text-center font-mono">
-            <Stat value="4,200+" label="Businesses launched" />
-            <Stat value="6 days" label="Avg. license approval" />
-            <Stat value="98.4%" label="Compliance accuracy" />
+           
           </div>
         </section>
       </Reveal>
