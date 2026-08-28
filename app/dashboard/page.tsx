@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
+import { BusinessProfileCard } from "@/components/BusinessProfileCard";
+import { DashboardResources } from "@/components/DashboardResources";
 import { BUSINESS_ACTIVITIES } from "@/lib/documentTypes";
 import { JOURNEY_STAGES, getStep, formatSar, formatDays } from "@/lib/ksaJourney";
 
@@ -47,6 +49,7 @@ export default function DashboardPage() {
   const [updatingId, setUpdatingId] = useState<number | null>(null);
   const [explainingId, setExplainingId] = useState<number | null>(null);
   const [explanations, setExplanations] = useState<Record<number, string>>({});
+  const [rebuilding, setRebuilding] = useState(false);
 
   useEffect(() => {
     load();
@@ -111,6 +114,25 @@ export default function DashboardPage() {
     }
   }
 
+  async function rebuildRoadmap(activity: string, ownership: string, legalStructure: string) {
+    if (!data || !data.hasEntity) return;
+    setRebuilding(true);
+    const { data: { session } } = await supabase.auth.getSession();
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+        body: JSON.stringify({ entityId: data.entity.id, activity, ownership, legalStructure }),
+      });
+      if (res.ok) await load();
+    } finally {
+      setRebuilding(false);
+    }
+  }
+
   if (checking) return null;
 
   return (
@@ -171,6 +193,15 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 </div>
+              </Reveal>
+
+              <Reveal delay={0.06} className="mt-6">
+                <BusinessProfileCard
+                  entity={data.entity}
+                  roadmap={data.roadmap}
+                  rebuilding={rebuilding}
+                  onRebuild={rebuildRoadmap}
+                />
               </Reveal>
 
               {data.nextAction && (
@@ -341,6 +372,10 @@ export default function DashboardPage() {
                     );
                   })()}
                 </div>
+              </Reveal>
+
+              <Reveal delay={0.16} className="mt-8">
+                <DashboardResources />
               </Reveal>
             </>
           )}
