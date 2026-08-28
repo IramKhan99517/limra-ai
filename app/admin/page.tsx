@@ -46,7 +46,9 @@ export default function AdminPage() {
 
   useEffect(() => {
     async function check() {
-      const { data: { user } } = await supabase.auth.getUser();
+      // Local session (instant) instead of a network getUser() that can hang.
+      const { data: { session: authSession } } = await supabase.auth.getSession();
+      const user = authSession?.user;
       if (!user) {
         router.push("/login");
         return;

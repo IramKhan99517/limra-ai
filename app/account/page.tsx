@@ -16,26 +16,35 @@ export default function AccountPage() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-      setEmail(user.email ?? "");
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("full_name")
-        .eq("id", user.id)
-        .single();
-      setFullName(profile?.full_name ?? "");
-      setSavedName(profile?.full_name ?? "");
-      setChecking(false);
-    });
+    // Local session (instant) + unblock render before the profile fetch, so neither
+    // a network auth call nor a slow profile query can leave the page blank.
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        const user = session?.user;
+        if (!user) {
+          router.push("/login");
+          return;
+        }
+        setEmail(user.email ?? "");
+        setChecking(false);
+        supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .single()
+          .then(({ data: profile }) => {
+            setFullName(profile?.full_name ?? "");
+            setSavedName(profile?.full_name ?? "");
+          });
+      })
+      .catch(() => setChecking(false));
   }, [router]);
 
   async function handleSave() {
     setSaving(true);
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
     if (user) {
       await supabase.from("profiles").update({ full_name: fullName }).eq("id", user.id);
       setSavedName(fullName);

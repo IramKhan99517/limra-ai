@@ -28,13 +28,18 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-      setChecking(false);
-    });
+    // Use the LOCAL session (instant) — getUser() hits the network and can hang,
+    // leaving this page stuck blank behind `if (checking) return null`.
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!session?.user) {
+          router.push("/login");
+          return;
+        }
+        setChecking(false);
+      })
+      .catch(() => setChecking(false));
   }, [router]);
 
   // Foreign investors cannot use a sole establishment — keep the form legal.
