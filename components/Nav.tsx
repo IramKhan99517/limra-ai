@@ -25,19 +25,28 @@ export function Nav() {
   const menuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (user) {
-        setEmail(user.email ?? null);
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role, full_name")
-          .eq("id", user.id)
-          .single();
-        setIsAdmin(profile?.role === "admin");
-        setFullName(profile?.full_name ?? null);
-      }
-      setLoaded(true);
-    });
+    // Gate the nav on the LOCAL session (instant) — not getUser() (network round-trip
+    // that can hang and leave the login control hidden behind the placeholder).
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        const user = session?.user;
+        setEmail(user?.email ?? null);
+        setLoaded(true);
+        if (user) {
+          // Enrich in the background; a slow/failed profile fetch must not block the UI.
+          supabase
+            .from("profiles")
+            .select("role, full_name")
+            .eq("id", user.id)
+            .single()
+            .then(({ data: profile }) => {
+              setIsAdmin(profile?.role === "admin");
+              setFullName(profile?.full_name ?? null);
+            });
+        }
+      })
+      .catch(() => setLoaded(true)); // never leave the nav stuck on the placeholder
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
       setEmail(session?.user?.email ?? null);

@@ -35,7 +35,10 @@ export default function VaultPage() {
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
+    // Use the LOCAL session (instant) to unblock rendering — getUser() hits the
+    // network and can hang, leaving the page stuck blank.
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      const user = session?.user;
       if (!user) {
         router.push("/login");
         return;
@@ -53,7 +56,7 @@ export default function VaultPage() {
         .maybeSingle();
       setActivity(entity?.activity ?? null);
       setOwnership(entity?.ownership ?? null);
-    });
+    }).catch(() => setChecking(false)); // never leave the page stuck blank
   }, [router]);
 
   async function loadTemplates() {
@@ -162,7 +165,7 @@ export default function VaultPage() {
               <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink-line">
                 <div
                   className="h-full bg-signal transition-all"
-                  style={{ width: `${(completedCount / relevantDocs.length) * 100}%` }}
+                  style={{ width: `${relevantDocs.length ? (completedCount / relevantDocs.length) * 100 : 0}%` }}
                 />
               </div>
             </div>
