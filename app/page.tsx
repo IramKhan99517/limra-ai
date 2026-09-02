@@ -8,12 +8,12 @@ const DOC_TYPE_COUNT = DOCUMENT_TYPES.length;
 const AUTHORITY_COUNT = new Set(DOCUMENT_TYPES.map((d) => d.portalName)).size;
 
 const MODULES = [
-  { name: "Document Vault", desc: "Store every business document in one private, encrypted vault — with the correct government form and portal for each requirement.", status: "live" },
-  { name: "Regulatory Radar", desc: "Real-time monitoring of MISA, ZATCA, and Ministry updates mapped to your entity.", status: "roadmap" },
-  { name: "Licensing Engine", desc: "Auto-generated, pre-validated license applications with confidence scoring.", status: "roadmap" },
-  { name: "Entity Structuring", desc: "Model LLC, branch, or JV structures with ownership and tax implications.", status: "roadmap" },
-  { name: "Incentive Finder", desc: "Surface grants, SEZ benefits, and Vision 2030 incentives you qualify for.", status: "roadmap" },
-  { name: "Localization Score", desc: "Track Saudization (Nitaqat) targets and GOSI compliance in one score.", status: "roadmap" },
+  { name: "Document Vault", desc: "Store every business document in one private, encrypted vault — with the correct government form and portal for each requirement.", status: "live", href: "/vault" },
+  { name: "Saudization Tracker", desc: "Monitor your Nitaqat band, Saudization ratio, and get actionable hiring recommendations.", status: "live", href: "/nitaqat" },
+  { name: "Market Insights", desc: "Data-driven sector analysis — growth rates, market sizes, opportunities, and regional hotspots.", status: "live", href: "/insights" },
+  { name: "Grants & Incentives", desc: "Curated directory of government grants, salary subsidies, and funding programs for SMEs.", status: "live", href: "/grants" },
+  { name: "Regulatory Radar", desc: "Real-time monitoring of MISA, ZATCA, and Ministry updates mapped to your entity.", status: "roadmap", href: "#" },
+  { name: "Licensing Engine", desc: "Auto-generated, pre-validated license applications with confidence scoring.", status: "roadmap", href: "#" },
 ];
 
 const ZONES = [
@@ -94,6 +94,43 @@ export default function Home() {
         </section>
       </Reveal>
 
+      {/* Vision 2030 Identity */}
+      <Reveal>
+        <section className="px-6 py-16">
+          <div className="mx-auto max-w-6xl">
+            <div className="rounded-2xl border border-gold/20 bg-gold/5 p-8 md:p-12">
+              <div className="flex flex-col items-start gap-6 md:flex-row md:items-center md:justify-between">
+                <div className="max-w-xl">
+                  <p className="eyebrow">Built for Vision 2030</p>
+                  <h2 className="mt-3 font-display text-2xl md:text-3xl">
+                    Supporting Saudi Arabia&apos;s transformation from day one
+                  </h2>
+                  <p className="mt-3 text-sm text-dune">
+                    LIMRA AI is built in alignment with Vision 2030 goals — empowering both local and
+                    foreign founders to build compliant, well-structured businesses across the Kingdom.
+                    From SMEs in Riyadh to startups in NEOM, we map your path through every Saudi authority.
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-col gap-3">
+                  <a
+                    href="/insights"
+                    className="rounded-full border border-signal/40 px-5 py-2.5 text-sm text-signal transition hover:bg-signal hover:text-ink"
+                  >
+                    Explore sector insights →
+                  </a>
+                  <a
+                    href="/grants"
+                    className="rounded-full border border-gold/40 px-5 py-2.5 text-sm text-gold transition hover:bg-gold hover:text-ink"
+                  >
+                    Find funding programs →
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </Reveal>
+
       {/* Modules */}
       <section id="modules" className="px-6 py-24">
         <div className="mx-auto max-w-6xl">
@@ -110,7 +147,12 @@ export default function Home() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {MODULES.map((m, i) => (
               <Reveal key={m.name} delay={i * 0.06}>
-                <div className="h-full rounded-xl border border-ink-line p-6 transition hover:border-signal/40">
+                <a
+                  href={m.href}
+                  className={`h-full block rounded-xl border p-6 transition hover:border-signal/40 ${
+                    m.status === "live" ? "border-signal/20 hover:bg-signal/5" : "border-ink-line"
+                  }`}
+                >
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="font-display text-lg">{m.name}</h3>
                     <span
@@ -122,7 +164,10 @@ export default function Home() {
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-dune">{m.desc}</p>
-                </div>
+                  {m.status === "live" && (
+                    <p className="mt-3 text-xs text-signal">Explore →</p>
+                  )}
+                </a>
               </Reveal>
             ))}
           </div>

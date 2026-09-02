@@ -6,9 +6,9 @@ import { supabase } from "@/lib/supabaseClient";
 
 const links = [
   { href: "/#modules", label: "Intelligence" },
-  { href: "/#zones", label: "Zones" },
-  { href: "/#calculator", label: "Calculator" },
-  { href: "/#marketplace", label: "Marketplace" },
+  { href: "/insights", label: "Insights" },
+  { href: "/nitaqat", label: "Nitaqat" },
+  { href: "/grants", label: "Grants" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/vault", label: "Vault" },
   { href: "/#pricing", label: "Pricing" },
