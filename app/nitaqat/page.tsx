@@ -46,7 +46,8 @@ export default function NitaqatPage() {
         .from("entities")
         .select("id, name, saudization_score, status")
         .eq("owner_id", session.user.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(5);
 
       setEntities(data ?? []);
     }).catch(() => setChecking(false));
