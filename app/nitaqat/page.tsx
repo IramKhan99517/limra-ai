@@ -20,6 +20,21 @@ const NITAQAT_BANDS = [
   { name: "Red", min: 0, color: "bg-red-500", textColor: "text-red-400", badge: "nitaqat-red", desc: "Significantly below target — visa restrictions, penalties, potential labor ban." },
 ];
 
+const REGIONAL_BUSINESSES = [
+  { name: "Najd Tech Solutions LLC", sector: "Technology", region: "Riyadh", score: 71, band: "Platinum", employees: 28, saudi: 20 },
+  { name: "Falak Logistics", sector: "Logistics", region: "Dammam", score: 64, band: "Platinum", employees: 45, saudi: 29 },
+  { name: "Dammam Steel Works", sector: "Industrial", region: "Eastern Province", score: 58, band: "Platinum", employees: 120, saudi: 70 },
+  { name: "Riyadh Cloud Systems", sector: "Technology", region: "Riyadh", score: 45, band: "Platinum", employees: 15, saudi: 7 },
+  { name: "Jeddah Retail Group", sector: "Trade & Retail", region: "Jeddah", score: 76, band: "Platinum", employees: 34, saudi: 26 },
+  { name: "NEOM Advisory Partners", sector: "Consulting", region: "Tabuk / NEOM", score: 69, band: "Platinum", employees: 12, saudi: 8 },
+  { name: "Tabuk Agri Innovations", sector: "Agriculture", region: "Tabuk", score: 38, band: "Green", employees: 22, saudi: 8 },
+  { name: "Eastern Petrochem Services", sector: "Energy", region: "Eastern Province", score: 61, band: "Platinum", employees: 85, saudi: 52 },
+  { name: "Makkah Hospitality Co.", sector: "Tourism", region: "Makkah", score: 29, band: "Yellow", employees: 40, saudi: 12 },
+  { name: "Vision Data Labs", sector: "Technology", region: "Riyadh", score: 82, band: "Platinum", employees: 18, saudi: 15 },
+  { name: "Qassim Manufacturing", sector: "Industrial", region: "Qassim", score: 55, band: "Platinum", employees: 65, saudi: 36 },
+  { name: "Riyadh Regional HQ Trading", sector: "Trading", region: "Riyadh", score: 88, band: "Platinum", employees: 30, saudi: 26 },
+];
+
 const RECOMMENDATIONS = [
   { icon: "📋", title: "Audit your current headcount", desc: "Map every employee's nationality and contract type. Qiwa provides a Saudization report you can download." },
   { icon: "🎓", title: "Hire Saudi graduates", desc: "Tap into the Human Resources Development Fund (HRDF/Hadaf) subsidies — up to 50% salary support for Saudi hires." },
@@ -28,6 +43,10 @@ const RECOMMENDATIONS = [
   { icon: "⏰", title: "Track quarterly", desc: "Your Nitaqat band is recalculated monthly. Check Qiwa every quarter to avoid surprises." },
   { icon: "📱", title: "Use Qiwa Digital Services", desc: "File Saudization reports, issue iqamas, and track compliance — all through the Qiwa platform." },
 ];
+
+function getBand(score: number) {
+  return NITAQAT_BANDS.find((b) => score >= b.min) ?? NITAQAT_BANDS[3];
+}
 
 export default function NitaqatPage() {
   const router = useRouter();
@@ -66,8 +85,8 @@ export default function NitaqatPage() {
               Saudization <span className="italic text-signal">compliance dashboard</span>
             </h1>
             <p className="mt-3 max-w-xl text-dune">
-              Monitor your Saudization (Nitaqat) ratio, understand your current band, and get
-              actionable recommendations to improve — all in one view.
+              Monitor your Saudization (Nitaqat) ratio, understand your current band, and see how
+              businesses across KSA are performing — all in one view.
             </p>
           </Reveal>
 
@@ -100,20 +119,31 @@ export default function NitaqatPage() {
             </div>
           </Reveal>
 
-          {/* Entity Saudization Scores */}
+          {/* Entity Saudization Scores — clickable */}
           {entities.length > 0 && (
             <Reveal delay={0.1} className="mt-8">
               <div className="rounded-xl border border-ink-line p-6">
-                <h2 className="font-display text-lg">Your Businesses</h2>
-                <p className="mt-1 text-xs text-dune">
-                  Saudization scores for your registered entities. Check Qiwa for real-time data.
-                </p>
-                <div className="mt-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="font-display text-lg">Your Businesses</h2>
+                    <p className="mt-1 text-xs text-dune">
+                      Saudization scores for your registered entities. Click to view details.
+                    </p>
+                  </div>
+                  <a href="/dashboard" className="text-xs text-signal hover:underline">
+                    View all →
+                  </a>
+                </div>
+                <div className="mt-6 space-y-3">
                   {entities.map((entity) => {
                     const score = Number(entity.saudization_score);
-                    const band = NITAQAT_BANDS.find((b) => score >= b.min) ?? NITAQAT_BANDS[3];
+                    const band = getBand(score);
                     return (
-                      <div key={entity.id} className="rounded-lg border border-ink-line p-4">
+                      <a
+                        key={entity.id}
+                        href="/dashboard"
+                        className="block rounded-lg border border-ink-line p-4 transition hover:border-signal/40 hover:bg-signal/5"
+                      >
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-linen">{entity.name}</p>
@@ -132,11 +162,12 @@ export default function NitaqatPage() {
                             style={{ width: `${Math.min(score, 100)}%` }}
                           />
                         </div>
-                        <div className="mt-2 flex justify-between text-[10px] text-dune">
+                        <div className="mt-2 flex items-center justify-between text-[10px] text-dune">
                           <span>0%</span>
+                          <span className="text-signal">View dashboard →</span>
                           <span>Platinum at 40%+</span>
                         </div>
-                      </div>
+                      </a>
                     );
                   })}
                 </div>
@@ -160,6 +191,54 @@ export default function NitaqatPage() {
               </div>
             </Reveal>
           )}
+
+          {/* Regional Businesses Across KSA */}
+          <Reveal delay={0.12} className="mt-12">
+            <div className="rounded-xl border border-ink-line p-6">
+              <h2 className="font-display text-lg">Businesses Across KSA</h2>
+              <p className="mt-1 text-xs text-dune">
+                How other businesses are performing on Saudization — browse by region and sector.
+              </p>
+              <div className="mt-6 overflow-x-auto">
+                <table className="w-full min-w-[600px] border-collapse text-sm">
+                  <thead>
+                    <tr className="border-b border-ink-line text-left text-dune">
+                      <th className="pb-3 font-normal">Business</th>
+                      <th className="pb-3 font-normal">Sector</th>
+                      <th className="pb-3 font-normal">Region</th>
+                      <th className="pb-3 font-normal">Score</th>
+                      <th className="pb-3 font-normal">Band</th>
+                      <th className="pb-3 font-normal">Saudi / Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {REGIONAL_BUSINESSES.sort((a, b) => b.score - a.score).map((biz) => {
+                      const band = getBand(biz.score);
+                      return (
+                        <tr key={biz.name} className="border-b border-ink-line/60 transition hover:bg-signal/5">
+                          <td className="py-3 text-linen">{biz.name}</td>
+                          <td className="py-3 text-dune">{biz.sector}</td>
+                          <td className="py-3 text-dune">{biz.region}</td>
+                          <td className={`py-3 font-mono ${band.textColor}`}>{biz.score}%</td>
+                          <td className="py-3">
+                            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${band.badge}`}>
+                              {band.name}
+                            </span>
+                          </td>
+                          <td className="py-3 font-mono text-dune">
+                            {biz.saudi} / {biz.employees}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-3 text-[11px] text-dune">
+                Illustrative sample data for orientation — real-time Saudization data is available through Qiwa.
+              </p>
+            </div>
+          </Reveal>
 
           {/* Recommendations */}
           <Reveal delay={0.15} className="mt-12">
