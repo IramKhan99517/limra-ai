@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
@@ -48,29 +49,64 @@ function getBand(score: number) {
 }
 
 export default function NitaqatPage() {
+  const router = useRouter();
+  const [checking, setChecking] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setIsLoggedIn(true);
-        const { data } = await supabase
-          .from("entities")
-          .select("id, name, saudization_score, status")
-          .eq("owner_id", session.user.id)
-          .order("created_at", { ascending: false })
-          .limit(5);
-        setEntities(data ?? []);
+      if (!session?.user) {
+        setChecking(false);
+        return;
       }
-    }).catch(() => {});
+      setIsLoggedIn(true);
+      setChecking(false);
+      const { data } = await supabase
+        .from("entities")
+        .select("id, name, saudization_score, status")
+        .eq("owner_id", session.user.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      setEntities(data ?? []);
+    }).catch(() => setChecking(false));
   }, []);
 
   const regions = [...new Set(BUSINESS_NAME_SUGGESTIONS.map((b) => b.region))];
   const filteredSuggestions = filter === "all"
     ? BUSINESS_NAME_SUGGESTIONS
     : BUSINESS_NAME_SUGGESTIONS.filter((b) => b.region === filter);
+
+  if (checking) return null;
+
+  if (!isLoggedIn) {
+    return (
+      <main>
+        <Nav />
+        <section className="px-6 py-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="eyebrow">Nitaqat Tracker</p>
+            <h1 className="mt-3 font-display text-3xl md:text-4xl">
+              Saudization <span className="italic text-signal">compliance dashboard</span>
+            </h1>
+            <p className="mt-4 text-dune">
+              Sign in to track your businesses, explore business name ideas across KSA regions,
+              and see personalized Saudization compliance data.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <a href="/signup" className="rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
+                Get started free
+              </a>
+              <a href="/login" className="rounded-full border border-ink-line px-6 py-3 text-sm text-linen transition hover:border-dune">
+                Log in
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main>
@@ -168,31 +204,9 @@ export default function NitaqatPage() {
             </Reveal>
           )}
 
-          {!isLoggedIn && (
-            <Reveal delay={0.08} className="mt-8">
-              <div className="rounded-xl border border-signal/30 bg-signal/5 p-6 text-center">
-                <p className="font-display text-lg text-linen">Sign in to track your businesses</p>
-                <p className="mt-2 text-sm text-dune">
-                  Create an account to add your business and see personalized Saudization tracking.
-                </p>
-                <a
-                  href="/signup"
-                  className="mt-4 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
-                >
-                  Get started free
-                </a>
-                <span className="mx-3 text-dune">or</span>
-                <a
-                  href="/login"
-                  className="inline-flex items-center justify-center rounded-full border border-ink-line px-6 py-3 text-sm text-linen transition hover:border-dune"
-                >
-                  Log in
-                </a>
-              </div>
-            </Reveal>
-          )}
 
-          {isLoggedIn && entities.length === 0 && (
+
+          {entities.length === 0 && (
             <Reveal delay={0.08} className="mt-8">
               <div className="rounded-xl border border-gold/30 bg-gold/5 p-6 text-center">
                 <p className="text-linen">No businesses on file yet</p>
