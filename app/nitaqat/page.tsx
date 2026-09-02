@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
@@ -20,19 +19,19 @@ const NITAQAT_BANDS = [
   { name: "Red", min: 0, color: "bg-red-500", textColor: "text-red-400", badge: "nitaqat-red", desc: "Significantly below target — visa restrictions, penalties, potential labor ban." },
 ];
 
-const REGIONAL_BUSINESSES = [
-  { name: "Najd Tech Solutions LLC", sector: "Technology", region: "Riyadh", score: 71, band: "Platinum", employees: 28, saudi: 20 },
-  { name: "Falak Logistics", sector: "Logistics", region: "Dammam", score: 64, band: "Platinum", employees: 45, saudi: 29 },
-  { name: "Dammam Steel Works", sector: "Industrial", region: "Eastern Province", score: 58, band: "Platinum", employees: 120, saudi: 70 },
-  { name: "Riyadh Cloud Systems", sector: "Technology", region: "Riyadh", score: 45, band: "Platinum", employees: 15, saudi: 7 },
-  { name: "Jeddah Retail Group", sector: "Trade & Retail", region: "Jeddah", score: 76, band: "Platinum", employees: 34, saudi: 26 },
-  { name: "NEOM Advisory Partners", sector: "Consulting", region: "Tabuk / NEOM", score: 69, band: "Platinum", employees: 12, saudi: 8 },
-  { name: "Tabuk Agri Innovations", sector: "Agriculture", region: "Tabuk", score: 38, band: "Green", employees: 22, saudi: 8 },
-  { name: "Eastern Petrochem Services", sector: "Energy", region: "Eastern Province", score: 61, band: "Platinum", employees: 85, saudi: 52 },
-  { name: "Makkah Hospitality Co.", sector: "Tourism", region: "Makkah", score: 29, band: "Yellow", employees: 40, saudi: 12 },
-  { name: "Vision Data Labs", sector: "Technology", region: "Riyadh", score: 82, band: "Platinum", employees: 18, saudi: 15 },
-  { name: "Qassim Manufacturing", sector: "Industrial", region: "Qassim", score: 55, band: "Platinum", employees: 65, saudi: 36 },
-  { name: "Riyadh Regional HQ Trading", sector: "Trading", region: "Riyadh", score: 88, band: "Platinum", employees: 30, saudi: 26 },
+const BUSINESS_NAME_SUGGESTIONS = [
+  { name: "Najd Tech Solutions LLC", sector: "Technology", region: "Riyadh", why: "Tech companies in Riyadh typically score Platinum due to high Saudi talent availability in the capital." },
+  { name: "Falak Logistics", sector: "Logistics", region: "Dammam", why: "Eastern Province logistics firms benefit from port proximity and strong Saudi workforce in transport." },
+  { name: "Dammam Steel Works", sector: "Industrial", region: "Eastern Province", why: "Heavy industry has Saudization mandates — manufacturing roles count heavily toward Nitaqat." },
+  { name: "Riyadh Cloud Systems", sector: "Technology", region: "Riyadh", why: "Cloud/SaaS startups in KAFD or Cloud Computing SEZ get fast-track licensing and tech incentives." },
+  { name: "Jeddah Retail Group", sector: "Trade & Retail", region: "Jeddah", why: "Retail is Saudi-friendly for Nitaqat — customer-facing roles easily filled by Saudi nationals." },
+  { name: "NEOM Advisory Partners", sector: "Consulting", region: "Tabuk / NEOM", why: "Consulting firms near NEOM benefit from mega-project demand and NEOM Innovation Fund access." },
+  { name: "Tabuk Agri Innovations", sector: "Agriculture", region: "Tabuk", why: "Agriculture is a Vision 2030 priority with Monsha'at subsidies and SEZ incentives in Tabuk." },
+  { name: "Eastern Petrochem Services", sector: "Energy", region: "Eastern Province", why: "Energy sector has strong Saudization requirements but also the highest HRDF salary support." },
+  { name: "Makkah Hospitality Co.", sector: "Tourism", region: "Makkah", why: "Tourism is the fastest-growing sector — TDF loans and tourism license fast-track apply." },
+  { name: "Vision Data Labs", sector: "Technology", region: "Riyadh", why: "AI/Data companies get MISA tech fast-track and can access KAFD startup programs." },
+  { name: "Qassim Manufacturing", sector: "Industrial", region: "Qassim", why: "MODON industrial cities offer subsidized land and factory setup support in Qassim." },
+  { name: "Riyadh Regional HQ Trading", sector: "Trading", region: "Riyadh", why: "RHQ Program incentives for multinationals — 30-year tax holiday and visa advantages." },
 ];
 
 const RECOMMENDATIONS = [
@@ -49,30 +48,29 @@ function getBand(score: number) {
 }
 
 export default function NitaqatPage() {
-  const router = useRouter();
-  const [checking, setChecking] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [entities, setEntities] = useState<Entity[]>([]);
+  const [filter, setFilter] = useState<string>("all");
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session?.user) {
-        router.push("/login");
-        return;
+      if (session?.user) {
+        setIsLoggedIn(true);
+        const { data } = await supabase
+          .from("entities")
+          .select("id, name, saudization_score, status")
+          .eq("owner_id", session.user.id)
+          .order("created_at", { ascending: false })
+          .limit(5);
+        setEntities(data ?? []);
       }
-      setChecking(false);
+    }).catch(() => {});
+  }, []);
 
-      const { data } = await supabase
-        .from("entities")
-        .select("id, name, saudization_score, status")
-        .eq("owner_id", session.user.id)
-        .order("created_at", { ascending: false })
-        .limit(5);
-
-      setEntities(data ?? []);
-    }).catch(() => setChecking(false));
-  }, [router]);
-
-  if (checking) return null;
+  const regions = [...new Set(BUSINESS_NAME_SUGGESTIONS.map((b) => b.region))];
+  const filteredSuggestions = filter === "all"
+    ? BUSINESS_NAME_SUGGESTIONS
+    : BUSINESS_NAME_SUGGESTIONS.filter((b) => b.region === filter);
 
   return (
     <main>
@@ -85,8 +83,8 @@ export default function NitaqatPage() {
               Saudization <span className="italic text-signal">compliance dashboard</span>
             </h1>
             <p className="mt-3 max-w-xl text-dune">
-              Monitor your Saudization (Nitaqat) ratio, understand your current band, and see how
-              businesses across KSA are performing — all in one view.
+              Monitor your Saudization (Nitaqat) ratio, explore business name ideas across KSA
+              regions, and see how other businesses are performing — all in one view.
             </p>
           </Reveal>
 
@@ -119,8 +117,8 @@ export default function NitaqatPage() {
             </div>
           </Reveal>
 
-          {/* Entity Saudization Scores — clickable */}
-          {entities.length > 0 && (
+          {/* Your Businesses (only if logged in + has entities) */}
+          {isLoggedIn && entities.length > 0 && (
             <Reveal delay={0.1} className="mt-8">
               <div className="rounded-xl border border-ink-line p-6">
                 <div className="flex items-center justify-between">
@@ -130,9 +128,7 @@ export default function NitaqatPage() {
                       Saudization scores for your registered entities. Click to view details.
                     </p>
                   </div>
-                  <a href="/dashboard" className="text-xs text-signal hover:underline">
-                    View all →
-                  </a>
+                  <a href="/dashboard" className="text-xs text-signal hover:underline">View all →</a>
                 </div>
                 <div className="mt-6 space-y-3">
                   {entities.map((entity) => {
@@ -157,10 +153,7 @@ export default function NitaqatPage() {
                           </div>
                         </div>
                         <div className="mt-3 h-2 overflow-hidden rounded-full bg-ink-line">
-                          <div
-                            className={`h-full rounded-full transition-all ${band.color}`}
-                            style={{ width: `${Math.min(score, 100)}%` }}
-                          />
+                          <div className={`h-full rounded-full transition-all ${band.color}`} style={{ width: `${Math.min(score, 100)}%` }} />
                         </div>
                         <div className="mt-2 flex items-center justify-between text-[10px] text-dune">
                           <span>0%</span>
@@ -175,7 +168,31 @@ export default function NitaqatPage() {
             </Reveal>
           )}
 
-          {entities.length === 0 && (
+          {!isLoggedIn && (
+            <Reveal delay={0.08} className="mt-8">
+              <div className="rounded-xl border border-signal/30 bg-signal/5 p-6 text-center">
+                <p className="font-display text-lg text-linen">Sign in to track your businesses</p>
+                <p className="mt-2 text-sm text-dune">
+                  Create an account to add your business and see personalized Saudization tracking.
+                </p>
+                <a
+                  href="/signup"
+                  className="mt-4 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
+                >
+                  Get started free
+                </a>
+                <span className="mx-3 text-dune">or</span>
+                <a
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-full border border-ink-line px-6 py-3 text-sm text-linen transition hover:border-dune"
+                >
+                  Log in
+                </a>
+              </div>
+            </Reveal>
+          )}
+
+          {isLoggedIn && entities.length === 0 && (
             <Reveal delay={0.08} className="mt-8">
               <div className="rounded-xl border border-gold/30 bg-gold/5 p-6 text-center">
                 <p className="text-linen">No businesses on file yet</p>
@@ -192,50 +209,66 @@ export default function NitaqatPage() {
             </Reveal>
           )}
 
-          {/* Regional Businesses Across KSA */}
+          {/* Business Name Suggestions Across KSA */}
           <Reveal delay={0.12} className="mt-12">
             <div className="rounded-xl border border-ink-line p-6">
-              <h2 className="font-display text-lg">Businesses Across KSA</h2>
-              <p className="mt-1 text-xs text-dune">
-                How other businesses are performing on Saudization — browse by region and sector.
-              </p>
-              <div className="mt-6 overflow-x-auto">
-                <table className="w-full min-w-[600px] border-collapse text-sm">
-                  <thead>
-                    <tr className="border-b border-ink-line text-left text-dune">
-                      <th className="pb-3 font-normal">Business</th>
-                      <th className="pb-3 font-normal">Sector</th>
-                      <th className="pb-3 font-normal">Region</th>
-                      <th className="pb-3 font-normal">Score</th>
-                      <th className="pb-3 font-normal">Band</th>
-                      <th className="pb-3 font-normal">Saudi / Total</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {REGIONAL_BUSINESSES.sort((a, b) => b.score - a.score).map((biz) => {
-                      const band = getBand(biz.score);
-                      return (
-                        <tr key={biz.name} className="border-b border-ink-line/60 transition hover:bg-signal/5">
-                          <td className="py-3 text-linen">{biz.name}</td>
-                          <td className="py-3 text-dune">{biz.sector}</td>
-                          <td className="py-3 text-dune">{biz.region}</td>
-                          <td className={`py-3 font-mono ${band.textColor}`}>{biz.score}%</td>
-                          <td className="py-3">
-                            <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] uppercase tracking-wide ${band.badge}`}>
-                              {band.name}
-                            </span>
-                          </td>
-                          <td className="py-3 font-mono text-dune">
-                            {biz.saudi} / {biz.employees}
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="font-display text-lg">Business Name Ideas Across KSA</h2>
+                  <p className="mt-1 text-xs text-dune">
+                    Sample business names with sector, region, and why they work for Saudization.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    onClick={() => setFilter("all")}
+                    className={`rounded-full px-3 py-1 text-[11px] transition ${filter === "all" ? "bg-signal/15 text-signal" : "border border-ink-line text-dune hover:text-linen"}`}
+                  >
+                    All regions
+                  </button>
+                  {regions.map((r) => (
+                    <button
+                      key={r}
+                      onClick={() => setFilter(r)}
+                      className={`rounded-full px-3 py-1 text-[11px] transition ${filter === r ? "bg-signal/15 text-signal" : "border border-ink-line text-dune hover:text-linen"}`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mt-6 space-y-3">
+                {filteredSuggestions.map((biz) => {
+                  const score = Math.floor(Math.random() * 50) + 40;
+                  const band = getBand(score);
+                  return (
+                    <div key={biz.name} className="rounded-lg border border-ink-line/60 p-4 transition hover:border-signal/30">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                        <div className="flex-1">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-linen">{biz.name}</p>
+                            <span className="rounded-full bg-ink-line px-2 py-0.5 text-[10px] text-dune">{biz.sector}</span>
+                            <span className="rounded-full bg-ink-line px-2 py-0.5 text-[10px] text-dune">{biz.region}</span>
+                          </div>
+                          <p className="mt-1.5 text-xs text-dune">{biz.why}</p>
+                        </div>
+                        <a
+                          href="/onboarding"
+                          className="shrink-0 rounded-full border border-signal/40 px-3 py-1.5 text-[11px] text-signal transition hover:bg-signal hover:text-ink"
+                        >
+                          Use this idea →
+                        </a>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <p className="mt-3 text-[11px] text-dune">
-                Illustrative sample data for orientation — real-time Saudization data is available through Qiwa.
+                Illustrative sample names for inspiration — verify name availability on{" "}
+                <a href="https://business.sa" target="_blank" rel="noopener noreferrer" className="text-signal hover:underline">
+                  Saudi Business Center
+                </a>{" "}
+                before registering.
               </p>
             </div>
           </Reveal>
