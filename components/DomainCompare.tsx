@@ -15,13 +15,14 @@ type DomainRow = {
   available: boolean | null;
 };
 
-type ApiResponse = { live: boolean; rows: DomainRow[] };
+type ApiResponse = { live: boolean; provider: string | null; rows: DomainRow[] };
 
 export default function DomainCompare() {
   const { t } = useI18n();
   const [root, setRoot] = useState("");
   const [rows, setRows] = useState<DomainRow[] | null>(null);
   const [live, setLive] = useState(false);
+  const [provider, setProvider] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   async function run() {
@@ -35,6 +36,7 @@ export default function DomainCompare() {
         const data: ApiResponse = await res.json();
         setRows(data.rows);
         setLive(data.live);
+        setProvider(data.provider);
       }
     } finally {
       setBusy(false);
@@ -43,7 +45,7 @@ export default function DomainCompare() {
 
   const clean = root.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
   const liveLabel = live
-    ? "live availability via Namecheap API"
+    ? `live availability via ${provider ?? "registrar"} API`
     : "indicative prices — connect a registrar API key for live data";
 
   return (
