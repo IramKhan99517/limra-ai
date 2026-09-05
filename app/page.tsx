@@ -2,6 +2,8 @@ import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
 import { RadarSignature } from "@/components/RadarSignature";
 import { Calculator } from "@/components/Calculator";
+import NameStudio from "@/components/NameStudio";
+import DomainCompare from "@/components/DomainCompare";
 import { DOCUMENT_TYPES } from "@/lib/documentTypes";
 
 const DOC_TYPE_COUNT = DOCUMENT_TYPES.length;
@@ -214,6 +216,12 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Name Studio — validate trade names against UAE naming law */}
+      <NameStudio />
+
+      {/* Domain Intelligence — registrar price comparison */}
+      <DomainCompare />
 
       {/* Calculator */}
       <section id="calculator" className="border-t border-ink-line px-6 py-24">

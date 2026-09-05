@@ -37,6 +37,26 @@
     --vision-teal: #00B4D8;
     --dark-navy: #0D1B2A;
   }
+
+  /* Arabic typography: switch to an Arabic font stack when RTL is active.
+     The numeric/mono details stay mono, headings keep a serif feel. */
+  html[dir="rtl"] body {
+    font-family: var(--font-plex-arabic), Tahoma, sans-serif;
+  }
+  html[dir="rtl"] .font-display {
+    font-family: var(--font-plex-arabic), Tahoma, sans-serif;
+    font-weight: 600;
+  }
+  html[dir="rtl"] .font-mono {
+    font-family: var(--font-plex-arabic), Tahoma, sans-serif;
+  }
+  html[dir="rtl"] .eyebrow {
+    letter-spacing: 0.08em;
+  }
+  /* Latin bits (emails, domains, prices, license numbers) read LTR inside RTL text */
+  html[dir="rtl"] [dir="ltr"] {
+    unicode-bidi: embed;
+  }
 }
 
 /* Geometric sadu-inspired background pattern */

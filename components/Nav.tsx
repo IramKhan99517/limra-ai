@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/i18n";
 
 const links = [
   { href: "/#modules", label: "Intelligence" },
@@ -79,6 +80,7 @@ export function Nav() {
   }
 
   const initials = (fullName || email || "?").trim().charAt(0).toUpperCase();
+  const { lang, setLang } = useI18n();
 
   return (
     <header className="sticky top-0 z-50 border-b border-ink-line/70 bg-ink/85 backdrop-blur">
@@ -103,6 +105,16 @@ export function Nav() {
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Language dropdown — English / العربية (whole page switches + RTL) */}
+          <select
+            aria-label="Language / اللغة"
+            value={lang}
+            onChange={(e) => setLang(e.target.value as "en" | "ar")}
+            className="hidden h-9 rounded-full border border-ink-line bg-ink px-3 text-sm text-dune transition hover:border-dune focus:outline-none sm:block"
+          >
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+          </select>
           <button
             onClick={() => setMobileOpen((o) => !o)}
             className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-line text-linen transition hover:border-dune md:hidden"
