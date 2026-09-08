@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter, IBM_Plex_Mono, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n";
+import { SubscriptionProvider } from "@/lib/paywall";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -45,7 +46,9 @@ export default function RootLayout({
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} ${plexArabic.variable}`}>
       <body>
-        <I18nProvider>{children}</I18nProvider>
+        <I18nProvider>
+          <SubscriptionProvider>{children}</SubscriptionProvider>
+        </I18nProvider>
       </body>
     </html>
   );

@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
-import { Nav } from "@/components/Nav";
+import { AppShell } from "@/components/AppShell";
 import { Reveal } from "@/components/Reveal";
 import { BusinessProfileCard } from "@/components/BusinessProfileCard";
 import { DashboardResources } from "@/components/DashboardResources";
+import { RecommendedNames } from "@/components/RecommendedNames";
+import { PremiumGate } from "@/lib/paywall";
 import { BUSINESS_ACTIVITIES } from "@/lib/documentTypes";
 import { JOURNEY_STAGES, getStep, formatSar, formatDays } from "@/lib/ksaJourney";
 
@@ -136,9 +138,8 @@ export default function DashboardPage() {
   if (checking) return null;
 
   return (
-    <main>
-      <Nav />
-      <section className="px-6 py-16">
+    <AppShell>
+      <section className="px-6 py-8 md:px-0 md:py-4">
         <div className="mx-auto max-w-4xl">
           <Reveal>
             <p className="eyebrow">Command Dashboard</p>
@@ -377,10 +378,21 @@ export default function DashboardPage() {
               <Reveal delay={0.16} className="mt-8">
                 <DashboardResources />
               </Reveal>
+
+              {/* AI branding module — recommended names for this business */}
+              <Reveal delay={0.18} className="mt-8">
+                <PremiumGate>
+                  <RecommendedNames
+                    seed={data.entity.name}
+                    activity={data.entity.activity}
+                    hint={`Business named ${data.entity.name}`}
+                  />
+                </PremiumGate>
+              </Reveal>
             </>
           )}
         </div>
       </section>
-    </main>
+    </AppShell>
   );
 }

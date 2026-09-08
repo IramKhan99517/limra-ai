@@ -143,8 +143,8 @@ export const JOURNEY_STEPS: JourneyStep[] = [
   {
     key: "reserve-trade-name",
     stageKey: "prepare",
-    title: "Reserve your trade name",
-    description: "Check availability and reserve your company name through the Saudi Business Center.",
+    title: "Plan & reserve your business name",
+    description: "Use Name Studio to shortlist brand-ready names, check Saudi naming rules, then reserve your chosen name through the Saudi Business Center.",
     authority: "Saudi Business Center",
     portalUrl: "https://business.sa",
     documentTypeIds: [],

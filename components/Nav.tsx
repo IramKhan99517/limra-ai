@@ -6,12 +6,12 @@ import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/i18n";
 
 const links = [
-  { href: "/#modules", label: "Intelligence" },
-  { href: "/insights", label: "Insights" },
-  { href: "/nitaqat", label: "Nitaqat" },
+  { href: "/naming-studio", label: "Name Studio" },
+  { href: "/domain-intelligence", label: "Domains" },
+  { href: "/roadmap-builder", label: "Roadmap" },
   { href: "/grants", label: "Grants" },
+  { href: "/insights", label: "Insights" },
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/vault", label: "Vault" },
   { href: "/#pricing", label: "Pricing" },
 ];
 
@@ -152,11 +152,20 @@ export function Nav() {
                   <a href="/account" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
                     View Profile
                   </a>
-                  <a href="/vault" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
-                    Document Vault
+                  <a href="/naming-studio" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    Name Studio
+                  </a>
+                  <a href="/domain-intelligence" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    Domain Intelligence
+                  </a>
+                  <a href="/settings" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    Settings
                   </a>
                   <a href="/dashboard" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
                     Dashboard
+                  </a>
+                  <a href="/vault" className="block rounded-lg px-3 py-2 text-linen transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>
+                    Document Vault
                   </a>
                   {isAdmin && (
                     <a href="/admin" className="block rounded-lg px-3 py-2 text-gold transition hover:bg-ink-line" onClick={() => setMenuOpen(false)}>

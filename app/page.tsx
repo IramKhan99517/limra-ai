@@ -2,20 +2,31 @@ import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
 import { RadarSignature } from "@/components/RadarSignature";
 import { Calculator } from "@/components/Calculator";
-import NameStudio from "@/components/NameStudio";
-import DomainCompare from "@/components/DomainCompare";
+import { UnlockBlock } from "@/lib/paywall";
+import { saudiDomainRecs } from "@/lib/naming";
 import { DOCUMENT_TYPES } from "@/lib/documentTypes";
 
 const DOC_TYPE_COUNT = DOCUMENT_TYPES.length;
 const AUTHORITY_COUNT = new Set(DOCUMENT_TYPES.map((d) => d.portalName)).size;
 
+const BENEFITS = [
+  "AI Business Setup Roadmap",
+  "Saudi Business Name Studio",
+  "Arabic Brand Generation",
+  "Domain Intelligence",
+  "Grants & Incentive Discovery",
+  "Business Planning Assistant",
+  "Localized Saudi Market Insights",
+  "Brand, Domain & Compliance Guidance",
+];
+
 const MODULES = [
+  { name: "Name Studio", desc: "Generate brand-ready Saudi business names, check naming rules, and get Arabic brand versions.", status: "live", href: "/naming-studio" },
+  { name: "Domain Intelligence", desc: "Domain availability, brand-domain matching, and Saudi market recommendations.", status: "live", href: "/domain-intelligence" },
+  { name: "Roadmap Builder", desc: "Personalized Saudi setup roadmaps with recommended business names built in.", status: "live", href: "/roadmap-builder" },
+  { name: "Grants & Incentives", desc: "Curated government grants, salary subsidies, and funding programs for SMEs.", status: "live", href: "/grants" },
   { name: "Document Vault", desc: "Store every business document in one private, encrypted vault — with the correct government form and portal for each requirement.", status: "live", href: "/vault" },
-  { name: "Saudization Tracker", desc: "Monitor your Nitaqat band, Saudization ratio, and get actionable hiring recommendations.", status: "live", href: "/nitaqat" },
   { name: "Market Insights", desc: "Data-driven sector analysis — growth rates, market sizes, opportunities, and regional hotspots.", status: "live", href: "/insights" },
-  { name: "Grants & Incentives", desc: "Curated directory of government grants, salary subsidies, and funding programs for SMEs.", status: "live", href: "/grants" },
-  { name: "Regulatory Radar", desc: "Real-time monitoring of MISA, ZATCA, and Ministry updates mapped to your entity.", status: "roadmap", href: "#" },
-  { name: "Licensing Engine", desc: "Auto-generated, pre-validated license applications with confidence scoring.", status: "roadmap", href: "#" },
 ];
 
 const ZONES = [
@@ -36,15 +47,21 @@ const EXPERTS = [
 
 const JOURNEY = [
   { step: "01", title: "Describe your business", desc: "Answer a short intake and LIMRA AI maps your activity to the exact licenses and documents you need in Saudi Arabia." },
-  { step: "02", title: "Get your roadmap", desc: "See a personalized, step-by-step checklist with the correct government form and portal for each requirement." },
+  { step: "02", title: "Get your roadmap & names", desc: "See a personalized, step-by-step checklist with the correct government form and portal — plus recommended brand-ready business names." },
   { step: "03", title: "Prepare & store", desc: "Download each official form, complete it, and keep every signed document in one secure vault." },
   { step: "04", title: "Stay organized as you grow", desc: "Track your setup progress and keep licenses, renewals, and documents in one place — with more automation on the way." },
 ];
 
+const NAME_PREVIEWS = [
+  { name: "Noora", root: "noora" },
+  { name: "Riyadh Roast", root: "riyadhroast" },
+  { name: "Sadeem Tech", root: "sadeemtech" },
+];
+
 const PLANS = [
-  { name: "Founder", price: "SAR 0", cadence: "forever", desc: "For solo founders exploring market entry.", features: ["Licensing checklist", "Document Vault", "Personalized setup roadmap", "Community support"], cta: "Start free", href: "/signup", featured: false },
-  { name: "Growth", price: "SAR 899", cadence: "month", desc: "For teams actively launching and operating.", features: ["Everything in Founder", "Command Dashboard", "Priority expert matching", "Up to 5 entities"], cta: "Request beta access", href: "/signup", featured: true },
-  { name: "Enterprise", price: "Custom", cadence: "", desc: "For multinationals and RHQ operations.", features: ["Unlimited entities", "Dedicated advisor", "API & data feeds", "SLA & audit logs", "Custom integrations"], cta: "Talk to sales", href: "#cta", featured: false },
+  { name: "Founder", price: "SAR 0", cadence: "forever", desc: "For solo founders exploring market entry.", features: ["Licensing checklist", "Document Vault", "Personalized setup roadmap", "Name Studio previews"], cta: "Start free", href: "/signup", featured: false },
+  { name: "Growth", price: "SAR 899", cadence: "month", desc: "For teams actively launching and branding in KSA.", features: ["Everything in Founder", "Unlimited Name Generation", "Arabic Brand Creation", "Premium Domain Intelligence", "Full Grants Database", "AI Business Roadmaps"], cta: "Subscribe now", href: "/subscribe", featured: true },
+  { name: "Enterprise", price: "Custom", cadence: "", desc: "For multinationals and RHQ operations.", features: ["Unlimited entities", "Dedicated advisor", "API & data feeds", "SLA & audit logs", "Custom integrations"], cta: "Talk to sales", href: "/subscribe", featured: false },
 ];
 
 export default function Home() {
@@ -58,20 +75,20 @@ export default function Home() {
           <Reveal>
             <p className="eyebrow">Powering Vision 2030</p>
             <h1 className="mt-4 text-balance font-display text-4xl leading-[1.08] md:text-6xl">
-              Launch your business in Saudi Arabia with{" "}
-              <span className="italic text-signal">total clarity.</span>
+              Launch Your Saudi Business{" "}
+              <span className="italic text-signal">Faster with AI</span>
             </h1>
             <p className="mt-6 max-w-md text-dune">
-              Describe your business in a sentence. LIMRA AI maps it to the exact Saudi licenses and
-              documents you need, builds a personalized setup roadmap, and keeps every file in one
-              secure vault.
+              From business name to bank account — LIMRA AI generates brand-ready names, checks
+              Saudi naming rules, produces Arabic brand versions, matches your domains, finds grants,
+              and builds your personalized setup roadmap.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <a href="/signup" className="rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
                 Start your setup
               </a>
-              <a href="/dashboard" className="rounded-full border border-ink-line px-6 py-3 text-sm text-linen transition hover:border-dune">
-                Explore the platform
+              <a href="/naming-studio" className="rounded-full border border-ink-line px-6 py-3 text-sm text-linen transition hover:border-dune">
+                Explore Name Studio
               </a>
             </div>
             <p className="mt-8 font-mono text-xs text-dune">
@@ -85,9 +102,33 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Benefits — premium value props */}
+      <section className="border-y border-ink-line bg-ink-soft/50 px-6 py-14">
+        <div className="mx-auto max-w-6xl">
+          <Reveal>
+            <p className="eyebrow">Everything you need to launch</p>
+            <h2 className="mt-3 max-w-2xl font-display text-2xl md:text-3xl">
+              One AI platform for the complete Saudi launch journey
+            </h2>
+          </Reveal>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {BENEFITS.map((b, i) => (
+              <Reveal key={b} delay={i * 0.03}>
+                <div className="flex items-center gap-3 rounded-xl border border-ink-line bg-ink/40 px-4 py-3.5">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-signal/15 text-sm text-signal">
+                    ✓
+                  </span>
+                  <span className="text-sm text-linen">{b}</span>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Stats */}
       <Reveal>
-        <section className="border-y border-ink-line bg-ink-soft/50 px-6 py-10">
+        <section className="border-b border-ink-line px-6 py-10">
           <div className="mx-auto grid max-w-6xl grid-cols-3 gap-6 text-center font-mono">
             <Stat value={String(DOC_TYPE_COUNT)} label="Document types mapped" />
             <Stat value={String(AUTHORITY_COUNT)} label="Saudi authorities covered" />
@@ -142,8 +183,8 @@ export default function Home() {
               Six engines that turn Saudi red tape into a clear path
             </h2>
             <p className="mt-3 max-w-xl text-dune">
-              The Document Vault is live today. The rest are on our near-term roadmap as we integrate
-              each Saudi authority.
+              Name Studio, Domain Intelligence, Roadmap Builder, and Grants are premium —
+              log in and subscribe to unlock the full stack.
             </p>
           </Reveal>
           <div className="mt-12 grid gap-6 md:grid-cols-3">
@@ -172,6 +213,127 @@ export default function Home() {
                 </a>
               </Reveal>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Name Studio teaser (premium) */}
+      <section className="border-t border-ink-line px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <Reveal>
+              <p className="eyebrow">Name Studio · Premium</p>
+              <h2 className="mt-3 text-balance font-display text-3xl md:text-4xl">
+                Brand Name Intelligence for Saudi Arabia
+              </h2>
+              <p className="mt-4 max-w-md text-dune">
+                Generate business names, check suitability against Saudi naming rules, explore
+                alternatives, and get an Arabic transliteration and natural Arabic brand version
+                for every option — optimized for Saudi regulations and market practice.
+              </p>
+              <ul className="mt-6 space-y-2.5 text-sm text-linen">
+                {[
+                  "Unlimited name generation",
+                  "Saudi naming-rule suitability checks",
+                  "Arabic transliteration & brand versions",
+                  "Premium brandable & SEO-friendly sets",
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-2.5">
+                    <span className="text-signal">✦</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="/naming-studio"
+                className="mt-8 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
+              >
+                Unlock Name Studio
+              </a>
+            </Reveal>
+
+            <Reveal delay={0.1}>
+              <div className="glass rounded-2xl p-6">
+                <p className="eyebrow">Preview — sample Arabic conversion</p>
+                <div className="mt-4 space-y-3">
+                  {[
+                    { en: "FutureEdge Consulting", ar: "فيوتشر إيدج كونسلتنج", brand: "حافة المستقبل للاستشارات" },
+                    { en: "Noora Trading Co.", ar: "نورا للتجارة", brand: "نورا التجارية" },
+                    { en: "Sadeem Tech Labs", ar: "سديم تك لابس", brand: "مختبرات سديم التقنية" },
+                  ].map((r) => (
+                    <div key={r.en} className="rounded-xl border border-ink-line bg-ink/40 p-4">
+                      <p className="font-display text-base text-linen">{r.en}</p>
+                      <div className="mt-2 space-y-0.5 text-sm">
+                        <p dir="rtl" className="text-dune">{r.ar} <span className="text-[10px] uppercase tracking-wide text-dune/70">· transliteration</span></p>
+                        <p dir="rtl" className="font-display text-gold">{r.brand} <span className="text-[10px] uppercase tracking-wide text-gold/70">· brand version</span></p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* Domain Intelligence teaser (premium) */}
+      <section className="border-t border-ink-line px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid items-center gap-10 lg:grid-cols-2">
+            <Reveal delay={0.1} className="order-2 lg:order-1">
+              <div className="glass rounded-2xl p-6">
+                <p className="eyebrow">Preview — Saudi market domains</p>
+                <div className="mt-4 grid gap-3">
+                  {NAME_PREVIEWS.map((ex) => (
+                    <div key={ex.name} className="rounded-xl border border-ink-line bg-ink/40 p-4">
+                      <p className="text-sm text-linen">{ex.name}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {saudiDomainRecs(ex.root)
+                          .slice(0, 4)
+                          .map((r) => (
+                            <span
+                              key={r.domain}
+                              dir="ltr"
+                              className="rounded-full bg-signal/10 px-2.5 py-1 font-mono text-[11px] text-signal"
+                            >
+                              {r.domain}
+                              {r.premium && <span className="ms-1 text-gold">premium</span>}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal className="order-1 lg:order-2">
+              <p className="eyebrow">Domain Intelligence · Premium</p>
+              <h2 className="mt-3 text-balance font-display text-3xl md:text-4xl">
+                Brand-domain matching for the Saudi market
+              </h2>
+              <p className="mt-4 max-w-md text-dune">
+                Check live domain availability, match domains to your brand, discover alternatives,
+                and get premium and Saudi-market recommendations built for KSA.
+              </p>
+              <ul className="mt-6 space-y-2.5 text-sm text-linen">
+                {[
+                  "Domain availability across 20+ extensions",
+                  "Brand-domain matching & alternatives",
+                  "Premium domain suggestions",
+                  ".sa & .com.sa Saudi market recommendations",
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-2.5">
+                    <span className="text-signal">◎</span> {f}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="/domain-intelligence"
+                className="mt-8 inline-flex items-center justify-center rounded-full border border-signal/50 px-6 py-3 text-sm text-signal transition hover:bg-signal hover:text-ink"
+              >
+                Unlock Domain Intelligence
+              </a>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -216,12 +378,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Name Studio — validate trade names against UAE naming law */}
-      <NameStudio />
-
-      {/* Domain Intelligence — registrar price comparison */}
-      <DomainCompare />
 
       {/* Calculator */}
       <section id="calculator" className="border-t border-ink-line px-6 py-24">
@@ -286,8 +442,8 @@ export default function Home() {
               Your entire Saudi operation, one glass surface
             </h2>
             <p className="mt-3 max-w-xl text-dune">
-              A live view of your business setup — licenses, documents, and your step-by-step
-              roadmap — backed by a real database that updates as you work.
+              A live view of your business setup — licenses, documents, recommended names, and your
+              step-by-step roadmap — backed by a real database that updates as you work.
             </p>
             <a
               href="/dashboard"
@@ -317,6 +473,15 @@ export default function Home() {
               </Reveal>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* What You'll Unlock — before subscription */}
+      <section id="unlock" className="border-t border-ink-line px-6 py-24">
+        <div className="mx-auto max-w-4xl">
+          <Reveal>
+            <UnlockBlock />
+          </Reveal>
         </div>
       </section>
 
@@ -371,13 +536,13 @@ export default function Home() {
       <section id="cta" className="border-t border-ink-line px-6 py-24 text-center">
         <Reveal>
           <h2 className="mx-auto max-w-2xl text-balance font-display text-3xl md:text-4xl">
-            Build your business in the Kingdom with confidence.
+            Launch your Saudi business faster with AI.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-dune">
-            Map your Saudi business setup, get a personalized document roadmap, and keep every
-            file in one secure vault — free while we&apos;re in private beta.
+            Names, Arabic brands, domains, grants, and your setup roadmap — one AI-powered platform
+            built for the Kingdom.
           </p>
-          <a href="#top" className="mt-8 inline-flex items-center justify-center rounded-full bg-signal px-7 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
+          <a href="/signup" className="mt-8 inline-flex items-center justify-center rounded-full bg-signal px-7 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft">
             Start your setup
           </a>
         </Reveal>
