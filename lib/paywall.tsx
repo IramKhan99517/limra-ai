@@ -18,6 +18,7 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useI18n } from "@/lib/i18n";
 
 export type SubscriptionStatus = {
   /** null = signed out or row missing; otherwise plan id. */
@@ -90,19 +91,29 @@ export const UNLOCK_FEATURES = [
 ];
 
 export function UnlockBlock() {
+  const { t } = useI18n();
+  const features = [
+    { titleKey: "unlock.f1.title", descKey: "unlock.f1.desc" },
+    { titleKey: "unlock.f2.title", descKey: "unlock.f2.desc" },
+    { titleKey: "unlock.f3.title", descKey: "unlock.f3.desc" },
+    { titleKey: "unlock.f4.title", descKey: "unlock.f4.desc" },
+    { titleKey: "unlock.f5.title", descKey: "unlock.f5.desc" },
+    { titleKey: "unlock.f6.title", descKey: "unlock.f6.desc" },
+    { titleKey: "unlock.f7.title", descKey: "unlock.f7.desc" },
+  ];
   return (
     <div className="rounded-2xl border border-gold/30 bg-gold/5 p-6 md:p-8">
-      <p className="eyebrow">Premium</p>
-      <h2 className="mt-2 font-display text-2xl md:text-3xl">What You&apos;ll Unlock</h2>
+      <p className="eyebrow">{t("unlock.eyebrow")}</p>
+      <h2 className="mt-2 font-display text-2xl md:text-3xl">{t("unlock.title")}</h2>
       <ul className="mt-6 space-y-3">
-        {UNLOCK_FEATURES.map((f) => (
-          <li key={f.title} className="flex items-start gap-3">
+        {features.map((f) => (
+          <li key={f.titleKey} className="flex items-start gap-3">
             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-signal/20 text-xs text-signal">
               ✓
             </span>
             <div>
-              <p className="text-sm font-medium text-linen">{f.title}</p>
-              <p className="text-xs text-dune">{f.desc}</p>
+              <p className="text-sm font-medium text-linen">{t(f.titleKey)}</p>
+              <p className="text-xs text-dune">{t(f.descKey)}</p>
             </div>
           </li>
         ))}
@@ -111,7 +122,7 @@ export function UnlockBlock() {
         href="/subscribe"
         className="mt-7 inline-flex w-full items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
       >
-        Subscribe to Unlock Full Business Intelligence
+        {t("unlock.cta")}
       </a>
     </div>
   );
@@ -123,6 +134,7 @@ export function UnlockBlock() {
  */
 export function PremiumGate({ children }: { children: ReactNode }) {
   const { active, loading } = useSubscription();
+  const { t } = useI18n();
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -132,7 +144,7 @@ export function PremiumGate({ children }: { children: ReactNode }) {
   if (loading || signedIn === null) {
     return (
       <div className="rounded-xl border border-ink-line p-8 text-center text-sm text-dune">
-        Checking your access…
+        {t("premiumGate.checking")}
       </div>
     );
   }
@@ -140,15 +152,13 @@ export function PremiumGate({ children }: { children: ReactNode }) {
   if (!signedIn) {
     return (
       <div className="rounded-2xl border border-signal/30 bg-signal/5 p-8 text-center">
-        <p className="font-display text-xl text-linen">This is a premium feature</p>
-        <p className="mx-auto mt-2 max-w-md text-sm text-dune">
-          Log in to unlock Name Studio, Domain Intelligence, Grants, and your AI Roadmap Builder.
-        </p>
+        <p className="font-display text-xl text-linen">{t("premiumGate.title")}</p>
+        <p className="mx-auto mt-2 max-w-md text-sm text-dune">{t("premiumGate.sub")}</p>
         <a
           href="/login"
           className="mt-6 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
         >
-          Log in to continue
+          {t("premiumGate.cta")}
         </a>
       </div>
     );

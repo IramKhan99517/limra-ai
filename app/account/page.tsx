@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
+import { useI18n } from "@/lib/i18n";
 
 export default function AccountPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [checking, setChecking] = useState(true);
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
@@ -60,16 +62,16 @@ export default function AccountPage() {
     <main>
       <Nav />
       <section className="mx-auto max-w-md px-6 py-20">
-        <p className="eyebrow">Your Profile</p>
-        <h1 className="mt-3 font-display text-3xl">{savedName || "Welcome"}</h1>
+        <p className="eyebrow">{t("account.eyebrow")}</p>
+        <h1 className="mt-3 font-display text-3xl">{savedName || t("account.welcome")}</h1>
 
         <div className="mt-8 space-y-4">
           <label className="block">
-            <span className="mb-1.5 block text-xs uppercase tracking-wide text-dune">Email</span>
+            <span className="mb-1.5 block text-xs uppercase tracking-wide text-dune">{t("account.email")}</span>
             <input value={email} disabled className="input opacity-60" />
           </label>
           <label className="block">
-            <span className="mb-1.5 block text-xs uppercase tracking-wide text-dune">Full name</span>
+            <span className="mb-1.5 block text-xs uppercase tracking-wide text-dune">{t("account.fullName")}</span>
             <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="input" />
           </label>
 
@@ -78,7 +80,7 @@ export default function AccountPage() {
             disabled={saving}
             className="rounded-full bg-signal px-5 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft disabled:opacity-60"
           >
-            {saving ? "Saving..." : saved ? "Saved ✓" : "Save changes"}
+            {saving ? t("account.saving") : saved ? t("account.saved") : t("account.save")}
           </button>
         </div>
       </section>

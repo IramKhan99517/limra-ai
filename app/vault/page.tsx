@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
 import { Reveal } from "@/components/Reveal";
 import { DOCUMENT_TYPES, DOCUMENT_CATEGORIES, documentsForActivity, BUSINESS_ACTIVITIES } from "@/lib/documentTypes";
+import { useI18n } from "@/lib/i18n";
 
 type StoredDoc = {
   id: number;
@@ -24,6 +25,7 @@ type Template = {
 
 export default function VaultPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [userId, setUserId] = useState<string | null>(null);
   const [checking, setChecking] = useState(true);
   const [docs, setDocs] = useState<StoredDoc[]>([]);
@@ -107,7 +109,7 @@ export default function VaultPage() {
   async function handleDownload(doc: StoredDoc) {
     const { data, error } = await supabase.storage.from("vault").createSignedUrl(doc.file_path, 60);
     if (error || !data) {
-      setError("Couldn't generate download link.");
+      setError(t("vault.downloadError"));
       return;
     }
     window.open(data.signedUrl, "_blank");
@@ -132,24 +134,20 @@ export default function VaultPage() {
       <section className="px-6 py-16">
         <div className="mx-auto max-w-4xl">
           <Reveal>
-            <p className="eyebrow">Document Vault</p>
-            <h1 className="mt-3 font-display text-3xl md:text-4xl">Your business, one secure folder</h1>
-            <p className="mt-3 text-dune">
-              Every document your business needs in Saudi Arabia, in one place. Download the correct
-              government form, fill it out, and store the signed copy here — everything stays with you
-              until your business is fully established.
-            </p>
+            <p className="eyebrow">{t("vault.eyebrow")}</p>
+            <h1 className="mt-3 font-display text-3xl md:text-4xl">{t("vault.title")}</h1>
+            <p className="mt-3 text-dune">{t("vault.sub")}</p>
             {activity ? (
               <p className="mt-2 text-xs text-signal">
-                Showing requirements for: {BUSINESS_ACTIVITIES.find((a) => a.id === activity)?.label ?? activity}
+                {t("vault.showingFor")} {BUSINESS_ACTIVITIES.find((a) => a.id === activity)?.label ?? activity}
               </p>
             ) : (
               <p className="mt-2 text-xs text-gold">
-                No business on file yet — showing the full checklist.{" "}
+                {t("vault.noBusiness")}{" "}
                 <a href="/onboarding" className="underline">
-                  Set up your business
+                  {t("vault.setupBusiness")}
                 </a>{" "}
-                to see requirements specific to you.
+                {t("vault.seeSpecific")}
               </p>
             )}
           </Reveal>
@@ -157,7 +155,7 @@ export default function VaultPage() {
           <Reveal delay={0.05} className="mt-8">
             <div className="rounded-xl border border-ink-line p-6">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-dune">Setup progress</span>
+                <span className="text-dune">{t("vault.progress")}</span>
                 <span className="font-mono text-signal">
                   {completedCount} / {relevantDocs.length}
                 </span>
@@ -197,7 +195,7 @@ export default function VaultPage() {
                                 uploaded ? "bg-signal/15 text-signal" : "bg-ink-line text-dune"
                               }`}
                             >
-                              {uploaded ? uploaded.status : "not started"}
+                              {uploaded ? uploaded.status : t("vault.notStarted")}
                             </span>
                           </div>
                           <p className="mt-1 text-xs text-dune">{dt.description}</p>
@@ -209,7 +207,7 @@ export default function VaultPage() {
                                 }
                                 className="text-xs text-signal hover:underline"
                               >
-                                ↓ Download blank form
+                                {t("vault.downloadForm")}
                               </button>
                             ) : (
                               <a
@@ -218,7 +216,7 @@ export default function VaultPage() {
                                 rel="noopener noreferrer"
                                 className="text-xs text-signal hover:underline"
                               >
-                                Get the form from {dt.portalName} →
+                                {t("vault.formFrom")} {dt.portalName} →
                               </a>
                             )}
                           </div>
@@ -231,13 +229,13 @@ export default function VaultPage() {
                                 onClick={() => handleDownload(uploaded)}
                                 className="rounded-full border border-ink-line px-3 py-1.5 text-xs text-linen transition hover:border-dune"
                               >
-                                View
+                                {t("vault.view")}
                               </button>
                               <button
                                 onClick={() => handleRemove(uploaded)}
                                 className="rounded-full border border-ink-line px-3 py-1.5 text-xs text-dune transition hover:border-gold hover:text-gold"
                               >
-                                Remove
+                                {t("vault.remove")}
                               </button>
                             </>
                           ) : (
@@ -256,7 +254,7 @@ export default function VaultPage() {
                                 disabled={uploadingId === dt.id}
                                 className="rounded-full bg-signal px-3 py-1.5 text-xs font-medium text-ink transition hover:bg-signal-soft disabled:opacity-60"
                               >
-                                {uploadingId === dt.id ? "Uploading..." : "Upload"}
+                                {uploadingId === dt.id ? t("vault.uploading") : t("vault.upload")}
                               </button>
                             </>
                           )}

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
 import { Nav } from "@/components/Nav";
+import { useI18n } from "@/lib/i18n";
 
 export default function SignUpPage() {
   return (
@@ -18,6 +19,7 @@ function SignUpContent() {
   const router = useRouter();
   const params = useSearchParams();
   const returnTo = params.get("returnTo") ?? "/dashboard";
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,16 +59,16 @@ function SignUpContent() {
     <main>
       <Nav />
       <section className="mx-auto flex max-w-md flex-col px-6 py-20">
-        <p className="eyebrow">Create account</p>
-        <h1 className="mt-3 font-display text-3xl">Start your LIMRA AI setup</h1>
+        <p className="eyebrow">{t("signup.eyebrow")}</p>
+        <h1 className="mt-3 font-display text-3xl">{t("signup.title")}</h1>
 
         {done ? (
           <div className="mt-8 rounded-xl border border-signal/40 bg-signal/5 p-6 text-sm">
-            <p className="text-linen">Check your email to confirm your account.</p>
+            <p className="text-linen">{t("signup.done.title")}</p>
             <p className="mt-2 text-dune">
-              Once confirmed, you can{" "}
+              {t("signup.done.body")}{" "}
               <Link href={`/login?returnTo=${encodeURIComponent(returnTo)}`} className="text-signal hover:underline">
-                log in
+                {t("signup.done.login")}
               </Link>
               .
             </p>
@@ -83,26 +85,26 @@ function SignUpContent() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
               </svg>
-              Register with Google
+              {t("signup.google")}
             </button>
 
             <div className="my-6 flex items-center gap-3 text-xs text-dune">
               <span className="h-px flex-1 bg-ink-line" />
-              or sign up with email
+              {t("signup.or")}
               <span className="h-px flex-1 bg-ink-line" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <Field label="Full name">
+              <Field label={t("signup.name")}>
                 <input
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="input"
-                  placeholder="Layla Al-Otaibi"
+                  placeholder={t("signup.namePlaceholder")}
                 />
               </Field>
-              <Field label="Email">
+              <Field label={t("signup.email")}>
                 <input
                   required
                   type="email"
@@ -112,7 +114,7 @@ function SignUpContent() {
                   placeholder="you@company.com"
                 />
               </Field>
-              <Field label="Password">
+              <Field label={t("signup.password")}>
                 <input
                   required
                   type="password"
@@ -120,7 +122,7 @@ function SignUpContent() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="input"
-                  placeholder="At least 6 characters"
+                  placeholder={t("signup.passwordPlaceholder")}
                 />
               </Field>
 
@@ -131,13 +133,13 @@ function SignUpContent() {
                 disabled={loading}
                 className="w-full rounded-full bg-signal px-5 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft disabled:opacity-60"
               >
-                {loading ? "Creating account..." : "Create account"}
+                {loading ? t("signup.loading") : t("signup.submit")}
               </button>
 
               <p className="text-center text-sm text-dune">
-                Already have an account?{" "}
+                {t("signup.haveAccount")}{" "}
                 <Link href={`/login?returnTo=${encodeURIComponent(returnTo)}`} className="text-signal hover:underline">
-                  Log in
+                  {t("signup.login")}
                 </Link>
               </p>
             </form>

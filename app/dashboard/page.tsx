@@ -9,6 +9,7 @@ import { BusinessProfileCard } from "@/components/BusinessProfileCard";
 import { DashboardResources } from "@/components/DashboardResources";
 import { RecommendedNames } from "@/components/RecommendedNames";
 import { PremiumGate } from "@/lib/paywall";
+import { useI18n } from "@/lib/i18n";
 import { BUSINESS_ACTIVITIES } from "@/lib/documentTypes";
 import { JOURNEY_STAGES, getStep, formatSar, formatDays } from "@/lib/ksaJourney";
 
@@ -45,6 +46,7 @@ type SummaryData =
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { t } = useI18n();
   const [checking, setChecking] = useState(true);
   const [data, setData] = useState<SummaryData | null>(null);
   const [error, setError] = useState(false);
@@ -142,30 +144,27 @@ export default function DashboardPage() {
       <section className="px-6 py-8 md:px-0 md:py-4">
         <div className="mx-auto max-w-4xl">
           <Reveal>
-            <p className="eyebrow">Command Dashboard</p>
-            <h1 className="mt-3 font-display text-3xl md:text-4xl">Your business, one view</h1>
+            <p className="eyebrow">{t("dash.eyebrow")}</p>
+            <h1 className="mt-3 font-display text-3xl md:text-4xl">{t("dash.title")}</h1>
           </Reveal>
 
           {error && (
             <div className="mt-10 rounded-xl border border-gold/40 bg-gold/5 p-6 text-sm text-linen">
-              <p className="font-medium text-gold">Couldn&apos;t load your dashboard.</p>
-              <p className="mt-2 text-dune">Check that DATABASE_URL and Supabase keys are configured correctly.</p>
+              <p className="font-medium text-gold">{t("dash.errorTitle")}</p>
+              <p className="mt-2 text-dune">{t("dash.errorBody")}</p>
             </div>
           )}
 
           {data && !data.hasEntity && (
             <Reveal delay={0.05} className="mt-10">
               <div className="rounded-xl border border-signal/40 bg-signal/5 p-8 text-center">
-                <p className="font-display text-xl">You haven&apos;t started a business yet</p>
-                <p className="mx-auto mt-2 max-w-md text-sm text-dune">
-                  Tell LIMRA AI what you want to do, and we&apos;ll build a personalized setup
-                  roadmap for you — documents, licenses, and next steps, tailored to your business.
-                </p>
+                <p className="font-display text-xl">{t("dash.noEntity.title")}</p>
+                <p className="mx-auto mt-2 max-w-md text-sm text-dune">{t("dash.noEntity.body")}</p>
                 <a
                   href="/onboarding"
                   className="mt-6 inline-flex items-center justify-center rounded-full bg-signal px-6 py-3 text-sm font-medium text-ink transition hover:bg-signal-soft"
                 >
-                  Start your business
+                  {t("dash.noEntity.cta")}
                 </a>
               </div>
             </Reveal>
@@ -181,15 +180,15 @@ export default function DashboardPage() {
                   <h2 className="mt-1 font-display text-2xl">{data.entity.name}</h2>
                   <div className="mt-4 grid grid-cols-3 gap-4 text-sm">
                     <div>
-                      <p className="text-xs text-dune">Status</p>
+                      <p className="text-xs text-dune">{t("dash.status")}</p>
                       <p className="mt-1 capitalize text-linen">{data.entity.status}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-dune">Active licenses</p>
+                      <p className="text-xs text-dune">{t("dash.activeLicenses")}</p>
                       <p className="mt-1 font-mono text-signal">{data.activeLicenses}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-dune">Pending filings</p>
+                      <p className="text-xs text-dune">{t("dash.pendingFilings")}</p>
                       <p className="mt-1 font-mono text-gold">{data.pendingFilings}</p>
                     </div>
                   </div>
@@ -208,12 +207,12 @@ export default function DashboardPage() {
               {data.nextAction && (
                 <Reveal delay={0.08} className="mt-6">
                   <div className="rounded-xl border border-signal/40 bg-signal/5 p-5">
-                    <p className="text-xs uppercase tracking-wide text-signal">Recommended next action</p>
+                    <p className="text-xs uppercase tracking-wide text-signal">{t("dash.nextAction")}</p>
                     <p className="mt-1 text-linen">{data.nextAction.title}</p>
                     <p className="mt-1 text-sm text-dune">{data.nextAction.description}</p>
                     {data.nextAction.document_type_id && (
                       <a href="/vault" className="mt-2 inline-block text-xs text-signal hover:underline">
-                        Go to Document Vault →
+                        {t("dash.goVault")}
                       </a>
                     )}
                   </div>
@@ -223,11 +222,11 @@ export default function DashboardPage() {
               {data.licensesExpiringSoon.length > 0 && (
                 <Reveal delay={0.1} className="mt-6">
                   <div className="rounded-xl border border-gold/40 bg-gold/5 p-5">
-                    <p className="text-xs uppercase tracking-wide text-gold">Renewals due within 30 days</p>
+                    <p className="text-xs uppercase tracking-wide text-gold">{t("dash.renewals")}</p>
                     <ul className="mt-2 space-y-1 text-sm text-linen">
                       {data.licensesExpiringSoon.map((l, i) => (
                         <li key={i}>
-                          {l.type} — due {new Date(l.expiry_date).toLocaleDateString()}
+                          {l.type} — {t("dash.due")} {new Date(l.expiry_date).toLocaleDateString()}
                         </li>
                       ))}
                     </ul>
@@ -274,19 +273,19 @@ export default function DashboardPage() {
                                   {days && <span>· {days}</span>}
                                   <span
                                     className="rounded-full border border-gold/40 px-2 py-0.5 text-gold"
-                                    title="Indicative estimate from public sources — confirm with the authority. Not a quote."
+                                    title={t("dash.indicativeTitle")}
                                   >
-                                    indicative · verify
+                                    {t("dash.indicative")}
                                   </span>
                                 </div>
                               )}
                               {unmet.length > 0 && (
-                                <p className="mt-1 text-[11px] text-gold/80">Complete first: {unmet.join(", ")}</p>
+                                <p className="mt-1 text-[11px] text-gold/80">{t("dash.completeFirst")} {unmet.join(", ")}</p>
                               )}
                               <div className="mt-2 flex flex-wrap items-center gap-3 text-xs">
                                 {step.document_type_id && (
                                   <a href="/vault" className="text-signal hover:underline">
-                                    Go to Vault →
+                                    {t("dash.goVaultShort")}
                                   </a>
                                 )}
                                 {engineStep && (
@@ -296,7 +295,7 @@ export default function DashboardPage() {
                                     rel="noopener noreferrer"
                                     className="text-signal hover:underline"
                                   >
-                                    {engineStep.authority} portal →
+                                    {engineStep.authority} {t("dash.portal")}
                                   </a>
                                 )}
                                 {step.step_key && (
@@ -305,7 +304,7 @@ export default function DashboardPage() {
                                     disabled={explainingId === step.id}
                                     className="text-dune transition hover:text-linen disabled:opacity-60"
                                   >
-                                    {explainingId === step.id ? "Thinking…" : "✦ Explain this step"}
+                                    {explainingId === step.id ? t("dash.thinking") : t("dash.explain")}
                                   </button>
                                 )}
                               </div>
@@ -324,7 +323,7 @@ export default function DashboardPage() {
                                   : "border-ink-line text-dune hover:border-dune hover:text-linen"
                               }`}
                             >
-                              {step.status === "done" ? "Done ✓" : "Mark done"}
+                              {step.status === "done" ? t("dash.done") : t("dash.markDone")}
                             </button>
                           </div>
                         </li>
@@ -334,16 +333,12 @@ export default function DashboardPage() {
                     return (
                       <>
                         <div className="flex items-center justify-between">
-                          <h2 className="font-display text-lg">Your setup roadmap</h2>
+                          <h2 className="font-display text-lg">{t("dash.roadmap")}</h2>
                           <span className="font-mono text-xs text-signal">
                             {doneCount} / {roadmap.length}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-dune">
-                          A step-by-step Saudi setup path built for your business. Fees and timelines are
-                          indicative and flagged for verification; final approval always comes from the
-                          relevant government authority.
-                        </p>
+                        <p className="mt-1 text-xs text-dune">{t("dash.roadmap.sub")}</p>
 
                         <div className="mt-6 space-y-8">
                           {grouped.map((group) => (
@@ -363,7 +358,7 @@ export default function DashboardPage() {
                           {ungrouped.length > 0 && (
                             <div>
                               <h3 className="font-display text-sm uppercase tracking-wide text-linen">
-                                Your roadmap
+                                {t("dash.yourRoadmap")}
                               </h3>
                               <ul className="mt-3 space-y-4">{ungrouped.map(renderStep)}</ul>
                             </div>
