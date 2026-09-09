@@ -27,6 +27,8 @@ export type SubscriptionStatus = {
   /** ISO date string or null. */
   expiresAt: string | null;
   loading: boolean;
+  /** Admins bypass the paywall and see every premium feature. */
+  isAdmin: boolean;
 };
 
 const Ctx = createContext<SubscriptionStatus>({
@@ -34,6 +36,7 @@ const Ctx = createContext<SubscriptionStatus>({
   active: false,
   expiresAt: null,
   loading: true,
+  isAdmin: false,
 });
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
@@ -42,12 +45,24 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     active: false,
     expiresAt: null,
     loading: true,
+    isAdmin: false,
   });
 
   const refresh = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user) {
-      setStatus({ plan: null, active: false, expiresAt: null, loading: false });
+      setStatus({ plan: null, active: false, expiresAt: null, loading: false, isAdmin: false });
+      return;
+    }
+    // Admins unlock everything regardless of subscription state.
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", session.user.id)
+      .single();
+    const isAdmin = profile?.role === "admin";
+    if (isAdmin) {
+      setStatus({ plan: "admin", active: true, expiresAt: null, loading: false, isAdmin: true });
       return;
     }
     const { data } = await supabase
@@ -56,11 +71,11 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       .eq("id", session.user.id)
       .single();
     if (!data) {
-      setStatus({ plan: null, active: false, expiresAt: null, loading: false });
+      setStatus({ plan: null, active: false, expiresAt: null, loading: false, isAdmin: false });
       return;
     }
     const active = data.status === "active" && (!data.expires_at || new Date(data.expires_at) > new Date());
-    setStatus({ plan: data.plan ?? null, active, expiresAt: data.expires_at ?? null, loading: false });
+    setStatus({ plan: data.plan ?? null, active, expiresAt: data.expires_at ?? null, loading: false, isAdmin: false });
   }, []);
 
   useEffect(() => {

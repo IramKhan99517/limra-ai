@@ -86,19 +86,26 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-ink-line/70 bg-ink/85 backdrop-blur">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <a href="/#top" className="flex items-center gap-2 font-display text-lg tracking-tight">
+        <a href="/#top" className="flex shrink-0 items-center gap-2 font-display text-lg tracking-tight">
           <span className="flex h-7 w-7 items-center justify-center rounded-full border border-signal/50 text-sm text-signal">
             L
           </span>
           LIMRA <span className="text-signal">AI</span>
         </a>
-        <div className="hidden items-center gap-7 text-sm text-dune md:flex">            {links.map((l) => (
-              <a key={l.href} href={l.href} className="transition hover:text-linen">
-                {t(l.key)}
-              </a>
-            ))}
+        {/* Desktop nav: compact set at md–lg, full set at xl+ so links never
+            crowd the brand or wrap onto two lines. */}
+        <div className="mx-auto hidden min-w-0 flex-1 items-center justify-center gap-5 whitespace-nowrap text-sm text-dune lg:flex xl:gap-7">
+          {links.map((l, i) => (
+            <a
+              key={l.href}
+              href={l.href}
+              className={`transition hover:text-linen ${i > 2 ? "hidden xl:inline" : ""}`}
+            >
+              {t(l.key)}
+            </a>
+          ))}
           {isAdmin && (
-            <a href="/admin" className="text-gold transition hover:text-gold-soft">
+            <a href="/admin" className="shrink-0 text-gold transition hover:text-gold-soft">
               {t("nav.admin")}
             </a>
           )}
@@ -117,7 +124,7 @@ export function Nav() {
           </select>
           <button
             onClick={() => setMobileOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-line text-linen transition hover:border-dune md:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-line text-linen transition hover:border-dune lg:hidden"
             aria-label={t("nav.menu")}
             aria-expanded={mobileOpen}
           >
@@ -203,7 +210,7 @@ export function Nav() {
       </nav>
 
       {mobileOpen && (
-        <div className="border-t border-ink-line bg-ink px-6 py-4 md:hidden">
+        <div className="border-t border-ink-line bg-ink px-6 py-4 lg:hidden">
           <div className="flex flex-col gap-1 text-sm">
             {links.map((l) => (
               <a
