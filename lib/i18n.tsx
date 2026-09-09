@@ -17,6 +17,8 @@ const en: Dict = {
   // Nav
   "nav.namestudio": "Name Studio",
   "nav.domains": "Domains",
+  "nav.about": "About",
+  "nav.nitaqat": "Nitaqat",
   "nav.roadmap": "Roadmap",
   "nav.grants": "Grants",
   "nav.insights": "Insights",
@@ -388,6 +390,8 @@ const ar: Dict = {
   // Nav
   "nav.namestudio": "استوديو الأسماء",
   "nav.domains": "النطاقات",
+  "nav.about": "من نحن",
+  "nav.nitaqat": "نطاقات",
   "nav.roadmap": "خارطة الطريق",
   "nav.grants": "المنح",
   "nav.insights": "رؤى السوق",

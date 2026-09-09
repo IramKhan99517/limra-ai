@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useI18n } from "@/lib/i18n";
 
+/* Header shows only site-level pages; workspace tools (Name Studio,
+ * Domains, Contract Analyzer, Roadmap, Vault…) live in the sidebar of
+ * the authenticated app (components/AppShell.tsx). */
 const links = [
-  { href: "/naming-studio", key: "nav.namestudio" },
-  { href: "/domain-intelligence", key: "nav.domains" },
-  { href: "/contract-analyzer", key: "nav.contract" },
-  { href: "/roadmap-builder", key: "nav.roadmap" },
-  { href: "/grants", key: "nav.grants" },
-  { href: "/insights", key: "nav.insights" },
+  { href: "/about", key: "nav.about" },
   { href: "/dashboard", key: "nav.dashboard" },
+  { href: "/grants", key: "nav.grants" },
+  { href: "/nitaqat", key: "nav.nitaqat" },
   { href: "/#pricing", key: "nav.pricing" },
 ];
 
@@ -92,15 +92,11 @@ export function Nav() {
           </span>
           LIMRA <span className="text-signal">AI</span>
         </a>
-        {/* Desktop nav: compact set at md–lg, full set at xl+ so links never
-            crowd the brand or wrap onto two lines. */}
-        <div className="mx-auto hidden min-w-0 flex-1 items-center justify-center gap-5 whitespace-nowrap text-sm text-dune lg:flex xl:gap-7">
-          {links.map((l, i) => (
-            <a
-              key={l.href}
-              href={l.href}
-              className={`transition hover:text-linen ${i > 2 ? "hidden xl:inline" : ""}`}
-            >
+        {/* Desktop nav: site-level pages only — workspace tools live in the
+            authenticated sidebar (AppShell). */}
+        <div className="mx-auto hidden min-w-0 flex-1 items-center justify-center gap-7 whitespace-nowrap text-sm text-dune md:flex">
+          {links.map((l) => (
+            <a key={l.href} href={l.href} className="transition hover:text-linen">
               {t(l.key)}
             </a>
           ))}
@@ -124,7 +120,7 @@ export function Nav() {
           </select>
           <button
             onClick={() => setMobileOpen((o) => !o)}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-line text-linen transition hover:border-dune lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-ink-line text-linen transition hover:border-dune md:hidden"
             aria-label={t("nav.menu")}
             aria-expanded={mobileOpen}
           >
@@ -210,7 +206,7 @@ export function Nav() {
       </nav>
 
       {mobileOpen && (
-        <div className="border-t border-ink-line bg-ink px-6 py-4 lg:hidden">
+        <div className="border-t border-ink-line bg-ink px-6 py-4 md:hidden">
           <div className="flex flex-col gap-1 text-sm">
             {links.map((l) => (
               <a
